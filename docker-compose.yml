@@ -1,0 +1,93 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bitacora_db
+      POSTGRES_USER: bitacora_user
+      POSTGRES_PASSWORD: enterprise_password_2026
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bitacora_user -d bitacora_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      USE_SQLITE: "False"
+      DB_HOST: db
+      DB_NAME: bitacora_db
+      DB_USER: bitacora_user
+      DB_PASSWORD: enterprise_password_2026
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      DJANGO_DEBUG: "True"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: .
+    command: celery -A bitacora_ee worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      USE_SQLITE: "False"
+      DB_HOST: db
+      DB_NAME: bitacora_db
+      DB_USER: bitacora_user
+      DB_PASSWORD: enterprise_password_2026
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      - web
+      - redis
+
+  beat:
+    build: .
+    command: celery -A bitacora_ee beat -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      USE_SQLITE: "False"
+      DB_HOST: db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      - worker
+
+volumes:
+  pgdata:

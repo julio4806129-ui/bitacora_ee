@@ -1,0 +1,69 @@
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.ruff_cache/
+
+# ── Django ──────────────────────────────────────────────────
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+/static/collected/
+
+# ── Secretos y entorno ──────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+cookies.txt
+secrets/
+credentials/
+
+# ── IDE / OS ────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Node (si frontend futuro) ───────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+dist/
+.next/
+
+# ── Celery / Redis dumps ────────────────────────────────────
+celerybeat-schedule
+celerybeat.pid
+dump.rdb
+
+# ── Backups locales ─────────────────────────────────────────
+*.bak
+*.backup
+scripts_refactor/.last_backup
+
+# ── Datos locales sensibles ─────────────────────────────────
+data_matriz.xlsx
+!data_matriz.example.xlsx

@@ -1,0 +1,16 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.git/
+.env
+db.sqlite3
+*.bak
+scripts_refactor/.last_backup
+node_modules/
+staticfiles/
+media/
+.pytest_cache/
+.mypy_cache/
+htmlcov/
+cookies.txt
