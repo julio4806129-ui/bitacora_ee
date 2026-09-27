@@ -84,15 +84,15 @@
           <div class="row g-3 mb-3">
             <div class="col-md-4">
               <label class="form-label small fw-semibold">Nombre del formulario</label>
-              <input aria-label="TODO_DESCRIBIR_editorNombre" type="text" id="editorNombre" class="form-control">
+              <input aria-label="Nombre del formulario" type="text" id="editorNombre" class="form-control">
             </div>
             <div class="col-md-2">
               <label class="form-label small fw-semibold">Versión</label>
-              <input aria-label="TODO_DESCRIBIR_editorVersion" type="text" id="editorVersion" class="form-control" readonly>
+              <input aria-label="Versión del formulario" type="text" id="editorVersion" class="form-control" readonly>
             </div>
             <div class="col-md-3">
               <label class="form-label small fw-semibold">Código</label>
-              <input aria-label="TODO_DESCRIBIR_editorCodigo" type="text" id="editorCodigo" class="form-control" readonly>
+              <input aria-label="Código del formulario" type="text" id="editorCodigo" class="form-control" readonly>
             </div>
             <div class="col-md-3 d-flex align-items-end">
               <div class="form-check">
@@ -147,7 +147,7 @@
             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
                 <span class="text-muted small" id="histTotal"></span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_histPageSize" id="histPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeHistPage(1)">
+                    <select aria-label="Registros por página" id="histPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeHistPage(1)">
                         <option value="25" selected>25</option><option value="50">50</option><option value="100">100</option>
                     </select>
                     <nav id="histPagNav"></nav>
@@ -163,7 +163,7 @@
                 <span class="fw-semibold"><i class="bi bi-list-check me-1"></i> Bitácora — Cola de trabajo</span>
                 <div class="d-flex gap-2 flex-wrap">
                     <input aria-label="Bus…" type="search" id="bitQ" class="form-control form-control-sm" placeholder="Bus…" style="width:100px" oninput="loadBitacora()">
-                    <select aria-label="TODO_DESCRIBIR_bitPatio" id="bitPatio" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">
+                    <select aria-label="Filtrar por patio" id="bitPatio" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">
                         <option value="">Todos los patios</option>
                         <option value="Chorrillo">Chorrillo</option>
                         <option value="Curundú">Curundú</option>
@@ -172,7 +172,7 @@
                         <option value="La Cabima">La Cabima</option>
                         <option value="Ojo de Agua">Ojo de Agua</option>
                     </select>
-                    <select aria-label="TODO_DESCRIBIR_bitTecnico" id="bitTecnico" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">
+                    <select aria-label="Filtrar por técnico" id="bitTecnico" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">
                         <option value="">Todos los técnicos</option>
                         {% for t in tecnicos %}<option value="{{ t.nombre }}">{{ t.nombre }}</option>{% endfor %}
                     </select>
@@ -198,7 +198,7 @@
             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
                 <span class="text-muted small" id="bitTotal"></span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_bitPageSize" id="bitPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeBitPage(1)">
+                    <select aria-label="Registros por página" id="bitPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeBitPage(1)">
                         <option value="25">25</option><option value="50">50</option>
                         <option value="100">100</option><option value="250" selected>250</option>
                     </select>
@@ -215,7 +215,7 @@
                 <span class="fw-semibold"><i class="bi bi-exclamation-triangle text-danger me-1"></i> Reportes GPS Offline</span>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <input aria-label="Buscar bus…" type="search" id="repQ" class="form-control form-control-sm" placeholder="Buscar bus…" style="width:120px" oninput="loadReportes()">
-                    <select aria-label="TODO_DESCRIBIR_filtroPatioReportes" id="filtroPatioReportes" class="form-select form-select-sm" style="width:auto" onchange="loadReportes()">
+                    <select aria-label="Filtrar por patio" id="filtroPatioReportes" class="form-select form-select-sm" style="width:auto" onchange="loadReportes()">
                         <option value="">Todos los patios</option>
                         {% for p in patios %}<option value="{{ p.nombre }}">{{ p.nombre }}</option>{% endfor %}
                     </select>
@@ -226,7 +226,7 @@
             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
                 <span class="text-muted small" id="repTotal"></span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_repPageSize" id="repPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeRepPage(1)">
+                    <select aria-label="Registros por página" id="repPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeRepPage(1)">
                         <option value="25" selected>25</option><option value="50">50</option><option value="100">100</option>
                     </select>
                     <nav id="repPagNav"></nav>
@@ -242,7 +242,7 @@
                 <span class="fw-semibold"><i class="bi bi-clipboard-check me-1"></i> Inventario de Flota</span>
                 <div class="d-flex gap-2">
                     <input aria-label="Bus/estado…" type="search" id="invQ" class="form-control form-control-sm" placeholder="Bus/estado…" style="width:130px" oninput="loadInventario()">
-                    <select aria-label="TODO_DESCRIBIR_invPageSize" id="invPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeInvPage(1)">
+                    <select aria-label="Registros por página" id="invPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeInvPage(1)">
                         <option value="50">50</option><option value="100" selected>100</option><option value="250">250</option>
                     </select>
                     <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadInventario()"><i class="bi bi-arrow-clockwise"></i></button>
@@ -349,7 +349,7 @@
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <select aria-label="TODO_DESCRIBIR_tkFiltroEstado" id="tkFiltroEstado" class="form-select form-select-sm" onchange="loadTickets()">
+                        <select aria-label="Filtrar por estado" id="tkFiltroEstado" class="form-select form-select-sm" onchange="loadTickets()">
                             <option value="">Estado: Todos</option>
                             <option value="ABIERTO">Abiertos</option>
                             <option value="EN_PROGRESO">En Progreso</option>
@@ -358,7 +358,7 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <select aria-label="TODO_DESCRIBIR_tkFiltroPrioridad" id="tkFiltroPrioridad" class="form-select form-select-sm" onchange="loadTickets()">
+                        <select aria-label="Filtrar por prioridad" id="tkFiltroPrioridad" class="form-select form-select-sm" onchange="loadTickets()">
                             <option value="">Prioridad: Todas</option>
                             <option value="CRITICA">Crítica</option>
                             <option value="ALTA">Alta</option>
@@ -367,7 +367,7 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <select aria-label="TODO_DESCRIBIR_tkFiltroCategoria" id="tkFiltroCategoria" class="form-select form-select-sm" onchange="loadTickets()">
+                        <select aria-label="Filtrar por categoría" id="tkFiltroCategoria" class="form-select form-select-sm" onchange="loadTickets()">
                             <option value="">Categoría: Todas</option>
                             <option value="GPS">GPS / Conectividad</option>
                             <option value="EQUIPO_EMBARCADO">Equipo Embarcado</option>
@@ -409,7 +409,7 @@
             <div class="card-footer bg-white border-0 py-2 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
                 <span id="tkInfoFooter">Cargando tickets...</span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_tkPageSize" id="tkPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeTkPage(1)">
+                    <select aria-label="Registros por página" id="tkPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeTkPage(1)">
                         <option value="15" selected>15</option><option value="30">30</option><option value="50">50</option>
                     </select>
                     <nav id="tkPagNav"></nav>
@@ -426,7 +426,7 @@
                 <span class="fw-semibold">Inventario de Flota (Buses)</span>
                 <div class="d-flex gap-2 flex-wrap">
                     <input aria-label="Buscar bus/placa" type="search" id="flotaQ" class="form-control form-control-sm" placeholder="Buscar bus/placa" style="width:140px" oninput="loadFlota()">
-                    <select aria-label="TODO_DESCRIBIR_flotaEstado" id="flotaEstado" class="form-select form-select-sm" style="width:auto" onchange="loadFlota()">
+                    <select aria-label="Filtrar por estado" id="flotaEstado" class="form-select form-select-sm" style="width:auto" onchange="loadFlota()">
                         <option value="">Todos</option>
                         <option value="ACTIVO">Activo</option>
                         <option value="MANTENIMIENTO">Mantenimiento</option>
@@ -446,7 +446,7 @@
             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
                 <span class="text-muted small" id="flotaTotal"></span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_flotaPageSize" id="flotaPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeFlotaPage(1)">
+                    <select aria-label="Registros por página" id="flotaPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeFlotaPage(1)">
                         <option value="50">50</option><option value="100" selected>100</option><option value="250">250</option>
                     </select>
                     <nav id="flotaPagNav"></nav>
@@ -461,7 +461,7 @@
             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between flex-wrap gap-2">
                 <span class="fw-semibold">Dispositivos GPS</span>
                 <div class="d-flex gap-2">
-                    <select aria-label="TODO_DESCRIBIR_gpsEstado" id="gpsEstado" class="form-select form-select-sm" style="width:auto" onchange="loadGPS()">
+                    <select aria-label="Filtrar por estado GPS" id="gpsEstado" class="form-select form-select-sm" style="width:auto" onchange="loadGPS()">
                         <option value="">Todos</option>
                         <option value="INSTALADO">Instalado</option>
                         <option value="BODEGA">Bodega</option>
@@ -478,7 +478,7 @@
             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
                 <span class="text-muted small" id="gpsTotal"></span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_gpsPageSize" id="gpsPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGpsPage(1)">
+                    <select aria-label="Registros por página" id="gpsPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGpsPage(1)">
                         <option value="50">50</option><option value="100" selected>100</option><option value="200">200</option>
                     </select>
                     <nav id="gpsPagNav"></nav>
@@ -526,7 +526,7 @@
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Hora de corte del contador diario</label>
                   <div class="input-group">
-                    <input aria-label="TODO_DESCRIBIR_cfg_turno_hora" type="number" id="cfg_turno_hora" class="form-control" min="0" max="23" placeholder="8">
+                    <input aria-label="Hora de corte del contador diario" type="number" id="cfg_turno_hora" class="form-control" min="0" max="23" placeholder="8">
                     <span class="input-group-text">h</span>
                   </div>
                   <div class="form-text">Después de esta hora inicia el nuevo día laboral (0–23).</div>
@@ -534,7 +534,7 @@
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Intervalo del poller</label>
                   <div class="input-group">
-                    <input aria-label="TODO_DESCRIBIR_cfg_poller_intervalo" type="number" id="cfg_poller_intervalo" class="form-control" min="1" max="120" placeholder="5">
+                    <input aria-label="Intervalo del poller en minutos" type="number" id="cfg_poller_intervalo" class="form-control" min="1" max="120" placeholder="5">
                     <span class="input-group-text">min</span>
                   </div>
                   <div class="form-text">Frecuencia de sincronización automática con BUSAE/Genesis.</div>
@@ -567,7 +567,7 @@
               <div class="row g-3 mt-1">
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Cuota diaria por defecto</label>
-                  <input aria-label="TODO_DESCRIBIR_cfg_bitacora_cuota" type="number" id="cfg_bitacora_cuota" class="form-control" min="0" max="500" placeholder="10">
+                  <input aria-label="Cuota diaria por defecto" type="number" id="cfg_bitacora_cuota" class="form-control" min="0" max="500" placeholder="10">
                   <div class="form-text">Cuota asignada a nuevos usuarios al crearlos.</div>
                 </div>
                 <div class="col-md-4">
@@ -589,16 +589,16 @@
               <div class="row g-3 mt-1">
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Intentos máx. de login</label>
-                  <input aria-label="TODO_DESCRIBIR_cfg_login_max" type="number" id="cfg_login_max" class="form-control" min="1" max="20" placeholder="5">
+                  <input aria-label="Intentos máximos de login" type="number" id="cfg_login_max" class="form-control" min="1" max="20" placeholder="5">
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Minutos de bloqueo</label>
-                  <input aria-label="TODO_DESCRIBIR_cfg_login_bloqueo" type="number" id="cfg_login_bloqueo" class="form-control" min="1" max="1440" placeholder="15">
+                  <input aria-label="Minutos de bloqueo" type="number" id="cfg_login_bloqueo" class="form-control" min="1" max="1440" placeholder="15">
                 </div>
                 <div class="col-md-4">
                   <label class="form-label fw-semibold">Duración de sesión</label>
                   <div class="input-group">
-                    <input aria-label="TODO_DESCRIBIR_cfg_sesion_horas" type="number" id="cfg_sesion_horas" class="form-control" min="1" max="72" placeholder="8">
+                    <input aria-label="Duración de sesión en horas" type="number" id="cfg_sesion_horas" class="form-control" min="1" max="72" placeholder="8">
                     <span class="input-group-text">h</span>
                   </div>
                 </div>
@@ -620,7 +620,7 @@
                         <div class="form-text">Permite crear y gestionar tickets de soporte.</div>
                       </div>
                       <div class="form-check form-switch mb-0">
-                        <input aria-label="TODO_DESCRIBIR_cfg_ff_tickets" class="form-check-input" type="checkbox" id="cfg_ff_tickets" role="switch">
+                        <input aria-label="Activar módulo de tickets" class="form-check-input" type="checkbox" id="cfg_ff_tickets" role="switch">
                       </div>
                     </div>
                   </div>
@@ -633,7 +633,7 @@
                         <div class="form-text">Guarda borradores de formulario antes de enviar.</div>
                       </div>
                       <div class="form-check form-switch mb-0">
-                        <input aria-label="TODO_DESCRIBIR_cfg_ff_borradores" class="form-check-input" type="checkbox" id="cfg_ff_borradores" role="switch">
+                        <input aria-label="Activar borradores de formularios" class="form-check-input" type="checkbox" id="cfg_ff_borradores" role="switch">
                       </div>
                     </div>
                   </div>
@@ -646,7 +646,7 @@
                         <div class="form-text">Habilita exportación de bitácoras a Excel.</div>
                       </div>
                       <div class="form-check form-switch mb-0">
-                        <input aria-label="TODO_DESCRIBIR_cfg_ff_excel" class="form-check-input" type="checkbox" id="cfg_ff_excel" role="switch">
+                        <input aria-label="Activar exportación a Excel" class="form-check-input" type="checkbox" id="cfg_ff_excel" role="switch">
                       </div>
                     </div>
                   </div>
@@ -706,7 +706,7 @@
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold">Orden</label>
-              <input aria-label="TODO_DESCRIBIR_patioOrden" type="number" id="patioOrden" class="form-control" value="99" min="0" max="999">
+              <input aria-label="Orden de visualización" type="number" id="patioOrden" class="form-control" value="99" min="0" max="999">
             </div>
             <div class="mb-3 form-check form-switch" id="patioActivoWrap" style="display:none!important;">
               <input class="form-check-input" type="checkbox" id="patioActivo" checked>
@@ -778,7 +778,7 @@
                         <h6 class="fw-bold mb-2"><i class="bi bi-cloud-upload text-primary me-2"></i>Carga manual Genesis (CSV)</h6>
                         <p class="text-muted small">Carga manual de monitoreo Genesis. Columnas: <code>bus_movil, origen, destino, patio, hora_entrada, estado, ruta</code></p>
                         <div class="mb-3">
-                            <input aria-label="TODO_DESCRIBIR_genesisCSV" type="file" id="genesisCSV" accept=".csv" class="form-control">
+                            <input aria-label="Seleccionar archivo CSV Genesis" type="file" id="genesisCSV" accept=".csv" class="form-control">
                         </div>
                         <button class="btn btn-accent" onclick="importGenesis()"><i class="bi bi-cloud-upload me-1"></i> Importar Genesis</button>
                         <div id="genesisResult" class="mt-3"></div>
@@ -793,7 +793,7 @@
                         <h6 class="fw-bold mb-2"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Carga manual BUSAE (CSV)</h6>
                         <p class="text-muted small">Carga manual de mapa/telemetría BUSAE. Columnas: <code>bus_movil, estado, latitud, longitud, velocidad, ultima_transmision, manos_libres, telefono</code></p>
                         <div class="mb-3">
-                            <input aria-label="TODO_DESCRIBIR_busaeCSV" type="file" id="busaeCSV" accept=".csv" class="form-control">
+                            <input aria-label="Seleccionar archivo CSV BUSAE" type="file" id="busaeCSV" accept=".csv" class="form-control">
                         </div>
                         <button class="btn btn-success" onclick="importBusae()"><i class="bi bi-cloud-upload me-1"></i> Importar BUSAE</button>
                         <div id="busaeResult" class="mt-3"></div>
@@ -834,7 +834,7 @@
             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
                 <span class="text-muted small" id="genesisTotal"></span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_genesisPageSize" id="genesisPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGenesisPage(1)">
+                    <select aria-label="Registros por página" id="genesisPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGenesisPage(1)">
                         <option value="25">25</option><option value="50" selected>50</option><option value="100">100</option>
                     </select>
                     <nav id="genesisPagNav"></nav>
@@ -848,20 +848,20 @@
         <div class="card border-0 shadow-sm" style="border-radius:12px;">
             <div class="card-header bg-white border-0 py-3 d-flex gap-2 flex-wrap">
                 <span class="fw-semibold me-auto">Registro de Auditoría</span>
-                <select aria-label="TODO_DESCRIBIR_audAccion" id="audAccion" class="form-select form-select-sm" style="width:auto" onchange="loadAuditoria()">
+                <select aria-label="Filtrar por acción" id="audAccion" class="form-select form-select-sm" style="width:auto" onchange="loadAuditoria()">
                     <option value="">Todas las acciones</option>
                     <option>LOGIN</option><option>LOGIN_FAIL</option><option>CREATE</option><option>UPDATE</option>
                     <option>DELETE</option><option>BAJA</option><option>ASIGNAR</option><option>MOVER</option>
                     <option>ATENDER</option><option>IMPORT</option>
                 </select>
-                <input aria-label="TODO_DESCRIBIR_audDesde" type="date" id="audDesde" class="form-control form-control-sm" style="width:auto" onchange="loadAuditoria()">
+                <input aria-label="Fecha desde" type="date" id="audDesde" class="form-control form-control-sm" style="width:auto" onchange="loadAuditoria()">
                 <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadAuditoria()"><i class="bi bi-arrow-clockwise"></i></button>
             </div>
             <div class="table-responsive"><table class="table table-hover table-modern mb-0 table-sm" id="tablaAuditoria"><thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Modelo</th><th>ID</th><th>Descripción</th><th>IP</th></tr></thead><tbody></tbody></table></div>
             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
                 <span class="text-muted small" id="audTotal"></span>
                 <div class="ms-auto d-flex align-items-center gap-1">
-                    <select aria-label="TODO_DESCRIBIR_audPageSize" id="audPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeAudPage(1)">
+                    <select aria-label="Registros por página" id="audPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeAudPage(1)">
                         <option value="50" selected>50</option><option value="100">100</option><option value="200">200</option>
                     </select>
                     <nav id="audPagNav"></nav>
@@ -986,7 +986,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Rol del Sistema <span class="text-danger">*</span></label>
-              <select aria-label="TODO_DESCRIBIR_usrRol" id="usrRol" class="form-select" required>
+              <select aria-label="Rol del sistema" id="usrRol" class="form-select" required>
                 <option value="TECNICO">Técnico de Campo</option>
                 <option value="SUPERVISOR">Supervisor</option>
                 <option value="ADMIN">Administrador</option>
@@ -998,7 +998,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Patio Asignado</label>
-              <select aria-label="TODO_DESCRIBIR_usrPatio" id="usrPatio" class="form-select">
+              <select aria-label="Patio asignado" id="usrPatio" class="form-select">
                 <option value="">— Sin patio fijo —</option>
                 {% for p in patios %}
                 <option value="{{ p.id }}">{{ p.nombre }}</option>
@@ -1007,7 +1007,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold">Cuota Diaria</label>
-              <input aria-label="TODO_DESCRIBIR_usrCuota" type="number" id="usrCuota" class="form-control" min="0" value="0">
+              <input aria-label="Cuota diaria" type="number" id="usrCuota" class="form-control" min="0" value="0">
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold">Correo Electrónico</label>
@@ -1020,8 +1020,8 @@
               </label>
               <div class="input-group">
                 <span class="input-group-text bg-white"><i class="bi bi-shield-lock"></i></span>
-                <input aria-label="TODO_DESCRIBIR_usrPassword" type="password" id="usrPassword" class="form-control" autocomplete="new-password">
-                <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('usrPassword', this)" tabindex="-1">
+                <input aria-label="Contraseña del usuario" type="password" id="usrPassword" class="form-control" autocomplete="new-password">
+                <button aria-label="Mostrar u ocultar contraseña" class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('usrPassword', this)" tabindex="-1">
                   <i class="bi bi-eye"></i>
                 </button>
               </div>
@@ -1061,7 +1061,7 @@
             <div class="input-group">
               <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
               <input aria-label="Mínimo 4 caracteres" type="password" id="resetPwdInput" class="form-control" placeholder="Mínimo 4 caracteres" minlength="4" required autocomplete="new-password">
-              <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('resetPwdInput', this)" tabindex="-1">
+              <button aria-label="Mostrar u ocultar contraseña" class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('resetPwdInput', this)" tabindex="-1">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
@@ -1090,7 +1090,7 @@
         <div class="mb-3"><label class="form-label">Modelo</label><input type="text" id="flotaModelo" class="form-control"></div>
         <div class="mb-3"><label class="form-label">Año</label><input type="number" id="flotaAnio" class="form-control" min="1990" max="2030"></div>
         <div class="mb-3"><label class="form-label">Patio base</label>
-            <select aria-label="TODO_DESCRIBIR_flotaPatio" id="flotaPatio" class="form-select"><option value="">—</option>{% for p in patios %}<option value="{{ p.codigo }}">{{ p.nombre }}</option>{% endfor %}</select>
+            <select aria-label="Patio base" id="flotaPatio" class="form-select"><option value="">—</option>{% for p in patios %}<option value="{{ p.codigo }}">{{ p.nombre }}</option>{% endfor %}</select>
         </div>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>
@@ -1130,7 +1130,7 @@
           <div class="row g-2 mb-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Categoría <span class="text-danger">*</span></label>
-              <select aria-label="TODO_DESCRIBIR_tkNuevoCategoria" id="tkNuevoCategoria" class="form-select" required>
+              <select aria-label="Categoría del ticket" id="tkNuevoCategoria" class="form-select" required>
                 <option value="GPS">GPS / Conectividad</option>
                 <option value="EQUIPO_EMBARCADO" selected>Equipo Embarcado / Hardware</option>
                 <option value="APLICACION">Aplicación / Sistema</option>
@@ -1140,7 +1140,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Prioridad <span class="text-danger">*</span></label>
-              <select aria-label="TODO_DESCRIBIR_tkNuevoPrioridad" id="tkNuevoPrioridad" class="form-select" required>
+              <select aria-label="Prioridad del ticket" id="tkNuevoPrioridad" class="form-select" required>
                 <option value="BAJA">Baja</option>
                 <option value="MEDIA" selected>Media</option>
                 <option value="ALTA">Alta</option>
@@ -1155,7 +1155,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Patio (opcional)</label>
-              <select aria-label="TODO_DESCRIBIR_tkNuevoPatio" id="tkNuevoPatio" class="form-select">
+              <select aria-label="Patio del ticket" id="tkNuevoPatio" class="form-select">
                 <option value="">Seleccionar patio…</option>
                 {% for p in patios %}
                 <option value="{{ p.id }}">{{ p.nombre }}</option>
@@ -1231,7 +1231,7 @@
               <div class="col-md-5">
                 <label class="form-label small fw-semibold mb-1">Cambiar estado:</label>
                 <div class="input-group input-group-sm">
-                  <select aria-label="TODO_DESCRIBIR_tkAccionEstadoSelect" id="tkAccionEstadoSelect" class="form-select form-select-sm">
+                  <select aria-label="Cambiar estado del ticket" id="tkAccionEstadoSelect" class="form-select form-select-sm">
                     <option value="ABIERTO">Abierto</option>
                     <option value="EN_PROGRESO">En Progreso</option>
                     <option value="RESUELTO">Resuelto</option>
@@ -1243,7 +1243,7 @@
               <div class="col-md-4" id="tkColAsignar">
                 <label class="form-label small fw-semibold mb-1">Asignar a:</label>
                 <div class="input-group input-group-sm">
-                  <select aria-label="TODO_DESCRIBIR_tkAccionAsignarSelect" id="tkAccionAsignarSelect" class="form-select form-select-sm">
+                  <select aria-label="Asignar ticket a técnico" id="tkAccionAsignarSelect" class="form-select form-select-sm">
                     <option value="">Sin asignar</option>
                     {% for t in tecnicos %}
                     <option value="{{ t.codigo }}">{{ t.nombre }}</option>
@@ -2908,10 +2908,10 @@ async function loadPatios() {
                 <td>${p.orden}</td>
                 <td><span class="badge ${p.activo ? 'bg-success' : 'bg-secondary'}">${p.activo ? 'Activo' : 'Inactivo'}</span></td>
                 <td>
-                    <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-sm btn-outline-primary me-1" onclick='patioModalAbrir(${JSON.stringify(p)})'>
+                    <button aria-label="Mostrar u ocultar contraseña" class="btn btn-sm btn-outline-primary me-1" onclick='patioModalAbrir(${JSON.stringify(p)})'>
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-sm btn-outline-danger" onclick="patioEliminar(${p.id}, '${p.codigo}')">
+                    <button aria-label="Mostrar u ocultar contraseña" class="btn btn-sm btn-outline-danger" onclick="patioEliminar(${p.id}, '${p.codigo}')">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
