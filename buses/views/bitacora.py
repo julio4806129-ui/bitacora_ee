@@ -414,6 +414,7 @@ def _bitacora_to_dict(r, full=False):
         base['informe_corto'] = (r.informe_tecnico or '')[:80]
     return base
 
+@require_tecnico
 def api_formulario_activo(request):
     """Devuelve la plantilla JSON activa del motor de formularios."""
     plantilla = FormularioPlantilla.objects.filter(activa=True).order_by('-version').first()
@@ -485,12 +486,14 @@ def api_formulario_editor(request):
 
     nueva_version = bool(body.get('nueva_version'))
     if nueva_version:
-        FormularioPlantilla.objects.filter(codigo=plantilla.codigo).update(activa=False)
+        activar_nueva = bool(body.get('activar'))
+        if activar_nueva:
+            FormularioPlantilla.objects.filter(codigo=plantilla.codigo).update(activa=False)
         plantilla = FormularioPlantilla.objects.create(
             codigo=plantilla.codigo,
             nombre=nombre,
             version=plantilla.version + 1,
-            activa=True,
+            activa=activar_nueva,
             definicion=definicion,
             descripcion=body.get('descripcion') or plantilla.descripcion,
         )
