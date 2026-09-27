@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Ingresar — Bitácora E.E{% endblock %}
+{% block body %}
+<div class="d-flex align-items-center justify-content-center min-vh-100"
+     style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1A237E 100%);">
+    <div class="card shadow-lg border-0" style="width:100%; max-width:420px; border-radius:16px;">
+        <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+                <img src="https://www.mibus.com.pa/wp-content/uploads/2020/05/retina-logo.png" alt="MiBus" height="48" class="mb-3">
+                <h4 class="fw-bold mb-1">Bitácora E.E</h4>
+                <p class="text-muted small mb-0">Sistema de revisión de equipo embarcado</p>
+            </div>
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger py-2 small">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            <form method="post" autocomplete="off">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Código de técnico</label>
+                    <input type="text" name="codigo" class="form-control form-control-lg"
+                           placeholder="Ej. 10844" required autofocus
+                           style="border-radius:10px;" inputmode="numeric" pattern="[0-9]+">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Contraseña</label>
+                    <input type="password" name="password" class="form-control form-control-lg" required
+                           placeholder="••••••••" style="border-radius:10px;" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold"
+                        style="border-radius:10px; background:#1A237E; border:none;">
+                    <i class="bi bi-shield-lock me-1"></i> Ingresar
+                </button>
+            </form>
+            <p class="text-center text-muted small mt-3 mb-0">Sesión segura · Intentos limitados · <a href="/privacidad/" class="text-muted">Privacidad</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

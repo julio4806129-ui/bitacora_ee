@@ -1,0 +1,3410 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Bitácora E.E{% endblock %}
+{% block body %}
+<aside class="sidebar" id="sidebar">
+    <div class="brand d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+        <img src="https://www.mibus.com.pa/wp-content/uploads/2020/05/retina-logo.png" alt="Logo MiBus" width="32" height="32" style="height:32px;width:auto;">
+            <span>Bitácora E.E</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-link text-white text-opacity-75 p-0 d-lg-none" onclick="cerrarSidebar()" title="Cerrar menú" aria-label="Cerrar menú de navegación">
+            <i class="bi bi-x-lg fs-5" aria-hidden="true"></i>
+        </button>
+    </div>
+    <nav class="mt-2" aria-label="Menú principal">
+        <a href="#" class="active" data-section="bitacora" onclick="showSection('bitacora')" aria-current="page"><i class="bi bi-list-check" aria-hidden="true"></i> Bitácora</a>
+        <a href="#" data-section="historial" onclick="showSection('historial')"><i class="bi bi-journal-text" aria-hidden="true"></i> Historial</a>
+        <a href="#" data-section="reportes" onclick="showSection('reportes')"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Reportes GPS</a>
+        <a href="#" data-section="inventario" onclick="showSection('inventario')"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Inventario</a>
+        <a href="#" data-section="resumen" onclick="showSection('resumen')"><i class="bi bi-bar-chart-line" aria-hidden="true"></i> Resumen</a>
+        <a href="#" data-section="tickets" onclick="showSection('tickets')"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> Tickets / Soporte <span class="badge bg-danger rounded-pill ms-auto d-none" id="navTicketsBadge" aria-label="Tickets pendientes">0</span></a>
+        {% if is_admin %}
+        <hr class="mx-3 border-secondary opacity-25">
+        {% if is_admin %}<a href="#" data-section="formulario" onclick="showSection('formulario')"><i class="bi bi-ui-checks-grid" aria-hidden="true"></i> Editor formulario</a>{% endif %}
+        <a href="#" data-section="flota" onclick="showSection('flota')"><i class="bi bi-bus-front" aria-hidden="true"></i> Flota / Buses</a>
+        <a href="#" data-section="gps" onclick="showSection('gps')"><i class="bi bi-broadcast-pin" aria-hidden="true"></i> Dispositivos GPS</a>
+        <a href="#" data-section="genesis" onclick="showSection('genesis')"><i class="bi bi-cpu" aria-hidden="true"></i> Poller & Sincronización</a>
+        <a href="#" data-section="auditoria" onclick="showSection('auditoria')"><i class="bi bi-shield-check" aria-hidden="true"></i> Auditoría</a>
+        <a href="#" data-section="usuarios" onclick="showSection('usuarios')"><i class="bi bi-people" aria-hidden="true"></i> Usuarios</a>
+        <a href="#" data-section="configuracion" onclick="showSection('configuracion')"><i class="bi bi-gear" aria-hidden="true"></i> Configuración</a>
+        {% endif %}
+        <hr class="mx-3 border-secondary opacity-25">
+        <a href="{% url 'logout' %}" aria-label="Cerrar sesión"><i class="bi bi-box-arrow-left" aria-hidden="true"></i> Salir</a>
+    </nav>
+</aside>
+
+<div class="main-content">
+    <div class="topbar flex-wrap gap-2">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-sm btn-white bg-white border shadow-xs me-2" onclick="toggleSidebar()" title="Ocultar / Mostrar menú" id="btnToggleSidebar" aria-label="Alternar menú de navegación" aria-expanded="true" aria-controls="sidebar">
+                <i class="bi bi-list fs-5" aria-hidden="true"></i>
+            </button>
+            <h1 class="mb-0 fw-bold text-truncate fs-5" id="sectionTitle" style="max-width: 260px;">Bitácora</h1>
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 shadow-xs fw-semibold px-2 px-md-3 py-1" onclick="abrirModalReportarProblema()" title="Reportar problema o incidencia técnica" aria-label="Reportar problema o incidencia técnica">
+                <i class="bi bi-exclamation-octagon-fill text-danger" aria-hidden="true"></i>
+                <span class="d-none d-sm-inline">Reportar problema</span>
+            </button>
+            <div class="text-end d-none d-sm-block">
+                <div class="fw-semibold text-truncate" style="max-width: 170px;">{{ tecnico_nombre }}</div>
+                <small class="text-muted d-block text-truncate" style="max-width: 170px;">Cód. {{ tecnico_codigo }}{% if rol %} · {{ rol }}{% endif %}{% if patio_asignado_nombre %} · {{ patio_asignado_nombre }}{% endif %}</small>
+            </div>
+            <div class="bg-white rounded-pill px-3 py-1 shadow-sm border d-flex align-items-center gap-1">
+                <span class="text-muted small">Hoy:</span>
+                <strong id="contadorHoy" class="text-primary">{{ contador_hoy }}</strong>{% if cuota_diaria %}<span class="text-muted small">/{{ cuota_diaria }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 g-md-3 mb-3 mb-md-4">
+        <div class="col-6 col-md-3"><div class="card card-stat p-3"><div class="d-flex justify-content-between align-items-center"><div><div class="text-muted small">Atenciones hoy</div><div class="fs-4 fs-md-3 fw-bold" id="statContador">{{ contador_hoy }}</div></div><div class="rounded-circle bg-primary bg-opacity-10 p-2 p-md-3"><i class="bi bi-check2-circle text-primary fs-5 fs-md-4"></i></div></div></div></div>
+        <div class="col-6 col-md-3"><div class="card card-stat p-3"><div class="d-flex justify-content-between align-items-center"><div><div class="text-muted small">Cuota diaria</div><div class="fs-4 fs-md-3 fw-bold">{{ cuota_diaria|default:"—" }}</div></div><div class="rounded-circle bg-warning bg-opacity-10 p-2 p-md-3"><i class="bi bi-bullseye text-warning fs-5 fs-md-4"></i></div></div></div></div>
+        <div class="col-6 col-md-3"><div class="card card-stat p-3"><div class="d-flex justify-content-between align-items-center"><div><div class="text-muted small">Progreso</div><div class="fs-4 fs-md-3 fw-bold">{{ progreso }}%</div></div><div class="rounded-circle bg-success bg-opacity-10 p-2 p-md-3"><i class="bi bi-graph-up-arrow text-success fs-5 fs-md-4"></i></div></div>{% if cuota_diaria %}<div class="progress mt-2" style="height:6px;"><div class="progress-bar bg-success" style="width:{{ progreso }}%"></div></div>{% endif %}</div></div>
+        <div class="col-6 col-md-3"><div class="card card-stat p-3"><div class="d-flex justify-content-between align-items-center"><div><div class="text-muted small">Pendientes</div><div class="fs-4 fs-md-3 fw-bold text-danger">{{ pendientes_count }}</div></div><div class="rounded-circle bg-danger bg-opacity-10 p-2 p-md-3"><i class="bi bi-exclamation-circle text-danger fs-5 fs-md-4"></i></div></div></div></div>
+    </div>
+
+
+
+    <!-- EDITOR VISUAL FORMULARIO -->
+    <div id="section-formulario" class="section-panel d-none">
+      <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+        <div class="card-header bg-white border-0 py-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <div>
+            <span class="fw-semibold"><i class="bi bi-ui-checks-grid me-1"></i> Editor visual del formulario</span>
+            <div class="small text-muted">Cambia textos, opciones y reglas sin tocar código ni JSON</div>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editorAddSection()"><i class="bi bi-plus-lg"></i> Sección</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="editorSave(false)">Guardar</button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="editorSave(true)">Guardar como nueva versión</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Nombre del formulario</label>
+              <input type="text" id="editorNombre" class="form-control">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small fw-semibold">Versión</label>
+              <input type="text" id="editorVersion" class="form-control" readonly>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Código</label>
+              <input type="text" id="editorCodigo" class="form-control" readonly>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="editorActiva" checked>
+                <label class="form-check-label" for="editorActiva">Plantilla activa</label>
+              </div>
+            </div>
+          </div>
+          <div id="editorSections" class="d-flex flex-column gap-3"></div>
+          <p class="small text-muted mt-3 mb-0">
+            <i class="bi bi-info-circle"></i>
+            Los técnicos verán estos cambios la próxima vez que abran <strong>Atender</strong>.
+            Usa “Nueva versión” si quieres conservar el diseño anterior. Para <strong>matriz Radio base</strong>: tipo = matrix, filas = <code>clave|Etiqueta</code>, columnas = <code>VALOR|Texto</code> (ej. <code>radio_pedal|Pedal</code> y <code>FUNCIONA|Funciona</code>).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL atenciones -->
+    <div id="section-historial" class="section-panel d-none">
+        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="fw-semibold"><i class="bi bi-journal-text me-1"></i> Historial de atenciones</span>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="form-check form-switch mb-0 me-1">
+                        <input class="form-check-input" type="checkbox" id="histSoloMios" onchange="loadHistorial()">
+                        <label class="form-check-label small" for="histSoloMios">Solo mías</label>
+                    </div>
+                    <input type="search" id="histBus" class="form-control form-control-sm" placeholder="Buscar bus…" style="width:120px" oninput="loadHistorial()">
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadHistorial()"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-modern mb-0" id="tablaHistorial">
+                    <thead style="background:#1A237E;color:#fff;">
+                        <tr>
+                            <th>FECHA</th>
+                            <th>BUS</th>
+                            <th>PATIO</th>
+                            <th>TIPO</th>
+                            <th>TÉCNICO</th>
+                            <th>GPS</th>
+                            <th>VANDALISMO</th>
+                            <th>RADIO BASE</th>
+                            <th>CTAP</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="histTotal"></span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="histPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeHistPage(1)">
+                        <option value="25" selected>25</option><option value="50">50</option><option value="100">100</option>
+                    </select>
+                    <nav id="histPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BITÁCORA (cola de trabajo) -->
+    <div id="section-bitacora" class="section-panel">
+        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="fw-semibold"><i class="bi bi-list-check me-1"></i> Bitácora — Cola de trabajo</span>
+                <div class="d-flex gap-2 flex-wrap">
+                    <input type="search" id="bitQ" class="form-control form-control-sm" placeholder="Bus…" style="width:100px" oninput="loadBitacora()">
+                    <select id="bitPatio" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">
+                        <option value="">Todos los patios</option>
+                        <option value="Chorrillo">Chorrillo</option>
+                        <option value="Curundú">Curundú</option>
+                        <option value="La Doña">La Doña</option>
+                        <option value="Los Pueblos">Los Pueblos</option>
+                        <option value="La Cabima">La Cabima</option>
+                        <option value="Ojo de Agua">Ojo de Agua</option>
+                    </select>
+                    <select id="bitTecnico" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">
+                        <option value="">Todos los técnicos</option>
+                        {% for t in tecnicos %}<option value="{{ t.nombre }}">{{ t.nombre }}</option>{% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadBitacora()"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-modern mb-0" id="tablaBitacora">
+                    <thead style="background:#1B5E20;color:#fff;">
+                        <tr>
+                            <th>TÉCNICO ASIGNADO</th>
+                            <th>BUS</th>
+                            <th>ESTADO GENESIS</th>
+                            <th>ESTADO BUSAE</th>
+                            <th>PATIO UBICACIÓN</th>
+                            <th>HORA DE ENTRADA</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="bitTotal"></span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="bitPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeBitPage(1)">
+                        <option value="25">25</option><option value="50">50</option>
+                        <option value="100">100</option><option value="250" selected>250</option>
+                    </select>
+                    <nav id="bitPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORTES -->
+    <div id="section-reportes" class="section-panel d-none">
+        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="fw-semibold"><i class="bi bi-exclamation-triangle text-danger me-1"></i> Reportes GPS Offline</span>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <input type="search" id="repQ" class="form-control form-control-sm" placeholder="Buscar bus…" style="width:120px" oninput="loadReportes()">
+                    <select id="filtroPatioReportes" class="form-select form-select-sm" style="width:auto" onchange="loadReportes()">
+                        <option value="">Todos los patios</option>
+                        {% for p in patios %}<option value="{{ p.nombre }}">{{ p.nombre }}</option>{% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadReportes()"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaReportes"><thead><tr><th>Móvil</th><th>GPS</th><th>Patio</th><th>Fecha</th><th>Hora</th><th>Diagnóstico</th><th></th></tr></thead><tbody></tbody></table></div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="repTotal"></span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="repPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeRepPage(1)">
+                        <option value="25" selected>25</option><option value="50">50</option><option value="100">100</option>
+                    </select>
+                    <nav id="repPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVENTARIO -->
+    <div id="section-inventario" class="section-panel d-none">
+        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between flex-wrap gap-2">
+                <span class="fw-semibold"><i class="bi bi-clipboard-check me-1"></i> Inventario de Flota</span>
+                <div class="d-flex gap-2">
+                    <input type="search" id="invQ" class="form-control form-control-sm" placeholder="Bus/estado…" style="width:130px" oninput="loadInventario()">
+                    <select id="invPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeInvPage(1)">
+                        <option value="50">50</option><option value="100" selected>100</option><option value="250">250</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadInventario()"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaInventario"><thead><tr><th>Patio</th><th>Móvil</th><th>Hora</th><th>Estado</th><th>Últ. Atención</th><th>Fecha</th><th>Diagnóstico</th><th></th></tr></thead><tbody></tbody></table></div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="invTotal"></span>
+                <div class="ms-auto"><nav id="invPagNav"></nav></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div id="section-resumen" class="section-panel d-none">
+        <div class="row g-3 mb-3"><div class="col-md-3"><input type="date" id="filtroFecha" class="form-control" onchange="loadResumen()"></div></div>
+        <div class="row g-3">
+            <div class="col-lg-6"><div id="chart_tecnico" style="height:320px;" class="bg-white rounded-3 shadow-sm p-2"></div></div>
+            <div class="col-lg-6"><div id="chart_patio" style="height:320px;" class="bg-white rounded-3 shadow-sm p-2"></div></div>
+            <div class="col-lg-6"><div id="chart_tipo" style="height:320px;" class="bg-white rounded-3 shadow-sm p-2"></div></div>
+            <div class="col-lg-6"><div id="chart_gps" style="height:320px;" class="bg-white rounded-3 shadow-sm p-2"></div></div>
+        </div>
+    </div>
+
+    <!-- TICKETS / SOPORTE (FASE 6) -->
+    <div id="section-tickets" class="section-panel d-none">
+        <!-- KPIs / Métricas rápidas de Tickets -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <div class="card card-stat p-3 bg-white border-0 shadow-sm" style="border-radius:12px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Total Tickets</div>
+                            <div class="fs-4 fw-bold text-dark" id="tkStatTotal">0</div>
+                        </div>
+                        <div class="rounded-circle bg-secondary bg-opacity-10 p-3">
+                            <i class="bi bi-ticket-perforated text-secondary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stat p-3 bg-white border-0 shadow-sm" style="border-radius:12px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Abiertos / Pendientes</div>
+                            <div class="fs-4 fw-bold text-danger" id="tkStatAbiertos">0</div>
+                        </div>
+                        <div class="rounded-circle bg-danger bg-opacity-10 p-3">
+                            <i class="bi bi-exclamation-circle text-danger fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stat p-3 bg-white border-0 shadow-sm" style="border-radius:12px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">En Progreso</div>
+                            <div class="fs-4 fw-bold text-primary" id="tkStatProgreso">0</div>
+                        </div>
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="bi bi-gear text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stat p-3 bg-white border-0 shadow-sm" style="border-radius:12px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Resueltos / Cerrados</div>
+                            <div class="fs-4 fw-bold text-success" id="tkStatResueltos">0</div>
+                        </div>
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="bi bi-check-circle text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-semibold"><i class="bi bi-ticket-perforated me-1 text-primary"></i> Gestión de Tickets & Soporte Técnico</span>
+                    <span class="badge bg-light text-dark border" id="tkBadgeFiltro">Todos</span>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="abrirModalReportarProblema()">
+                        <i class="bi bi-plus-lg me-1"></i> Reportar problema
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="loadTickets()" title="Recargar">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body border-top py-2 bg-light bg-opacity-50">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="search" id="tkFiltroQ" class="form-control" placeholder="Buscar título, bus, técnico…" oninput="loadTickets()">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="tkFiltroEstado" class="form-select form-select-sm" onchange="loadTickets()">
+                            <option value="">Estado: Todos</option>
+                            <option value="ABIERTO">Abiertos</option>
+                            <option value="EN_PROGRESO">En Progreso</option>
+                            <option value="RESUELTO">Resueltos</option>
+                            <option value="CERRADO">Cerrados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="tkFiltroPrioridad" class="form-select form-select-sm" onchange="loadTickets()">
+                            <option value="">Prioridad: Todas</option>
+                            <option value="CRITICA">Crítica</option>
+                            <option value="ALTA">Alta</option>
+                            <option value="MEDIA">Media</option>
+                            <option value="BAJA">Baja</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select id="tkFiltroCategoria" class="form-select form-select-sm" onchange="loadTickets()">
+                            <option value="">Categoría: Todas</option>
+                            <option value="GPS">GPS / Conectividad</option>
+                            <option value="EQUIPO_EMBARCADO">Equipo Embarcado</option>
+                            <option value="APLICACION">Aplicación</option>
+                            <option value="PATIO">Patio</option>
+                            <option value="OTRO">Otro</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center justify-content-md-end">
+                        {% if is_admin %}
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="tkSoloMios" onchange="loadTickets()">
+                            <label class="form-check-label small" for="tkSoloMios">Solo asignados a mí</label>
+                        </div>
+                        {% else %}
+                        <span class="small text-muted"><i class="bi bi-info-circle"></i> Viendo tus tickets</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-modern mb-0" id="tablaTickets">
+                    <thead style="background:#263238;color:#fff;">
+                        <tr>
+                            <th style="width:70px;"># ID</th>
+                            <th style="width:90px;">PRIORIDAD</th>
+                            <th style="width:115px;">ESTADO</th>
+                            <th>TÍTULO & CATEGORÍA</th>
+                            <th style="width:90px;">BUS</th>
+                            <th>REPORTADO POR</th>
+                            <th>ASIGNADO A</th>
+                            <th style="width:130px;">FECHA</th>
+                            <th style="width:110px;" class="text-center">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white border-0 py-2 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">
+                <span id="tkInfoFooter">Cargando tickets...</span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="tkPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeTkPage(1)">
+                        <option value="15" selected>15</option><option value="30">30</option><option value="50">50</option>
+                    </select>
+                    <nav id="tkPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if is_admin %}
+    <!-- FLOTA -->
+    <div id="section-flota" class="section-panel d-none">
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between flex-wrap gap-2">
+                <span class="fw-semibold">Inventario de Flota (Buses)</span>
+                <div class="d-flex gap-2 flex-wrap">
+                    <input type="search" id="flotaQ" class="form-control form-control-sm" placeholder="Buscar bus/placa" style="width:140px" oninput="loadFlota()">
+                    <select id="flotaEstado" class="form-select form-select-sm" style="width:auto" onchange="loadFlota()">
+                        <option value="">Todos</option>
+                        <option value="ACTIVO">Activo</option>
+                        <option value="MANTENIMIENTO">Mantenimiento</option>
+                        <option value="BAJA">Baja</option>
+                        <option value="RESERVA">Reserva</option>
+                    </select>
+                    <button class="btn btn-sm btn-accent" onclick="showFlotaAlta()"><i class="bi bi-plus"></i> Alta</button>
+                    <label class="btn btn-sm btn-outline-secondary mb-0"><i class="bi bi-upload"></i> CSV<input type="file" id="flotaCSV" accept=".csv" hidden onchange="importFlota(this)"></label>
+                    <label class="btn btn-sm btn-outline-success mb-0"><i class="bi bi-file-earmark-excel"></i> Matriz Excel<input type="file" id="flotaXLSX" accept=".xlsx,.xls" hidden onchange="importMatrizExcel(this)"></label>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadFlota()"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaFlota"><thead><tr>
+<th>Bus</th><th>Placa</th><th>Estado</th><th>Patio</th>
+<th>Genesis</th><th>Sistema</th><th>BUSAE</th><th>FW</th><th>Bocina</th><th>Ad.Eléc.</th>
+<th></th></tr></thead><tbody></tbody></table></div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="flotaTotal"></span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="flotaPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeFlotaPage(1)">
+                        <option value="50">50</option><option value="100" selected>100</option><option value="250">250</option>
+                    </select>
+                    <nav id="flotaPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPS -->
+    <div id="section-gps" class="section-panel d-none">
+        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between flex-wrap gap-2">
+                <span class="fw-semibold">Dispositivos GPS</span>
+                <div class="d-flex gap-2">
+                    <select id="gpsEstado" class="form-select form-select-sm" style="width:auto" onchange="loadGPS()">
+                        <option value="">Todos</option>
+                        <option value="INSTALADO">Instalado</option>
+                        <option value="BODEGA">Bodega</option>
+                        <option value="REPARACION">Reparación</option>
+                        <option value="BAJA">Baja</option>
+                    </select>
+                    <input type="search" id="gpsQ" class="form-control form-control-sm" placeholder="IMEI/bus…" style="width:120px" oninput="loadGPS()">
+                    <button class="btn btn-sm btn-accent" onclick="showGPSAlta()"><i class="bi bi-plus"></i> Alta</button>
+                    <label class="btn btn-sm btn-outline-secondary mb-0"><i class="bi bi-upload"></i> CSV<input type="file" id="gpsCSV" accept=".csv" hidden onchange="importGPS(this)"></label>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadGPS()"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaGPS"><thead><tr><th>IMEI</th><th>Modelo</th><th>Estado</th><th>Bus</th><th>Teléfono</th><th></th></tr></thead><tbody></tbody></table></div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="gpsTotal"></span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="gpsPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGpsPage(1)">
+                        <option value="50">50</option><option value="100" selected>100</option><option value="200">200</option>
+                    </select>
+                    <nav id="gpsPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POLLER & CARGAS MANUALES -->
+    <!-- ═══════════ SECCIÓN: CONFIGURACIÓN GLOBAL (Fase 5) ═══════════ -->
+    <div id="section-configuracion" class="section-panel d-none">
+      <!-- Tabs -->
+      <div class="card border-0 shadow-sm mb-4" style="border-radius:12px;">
+        <div class="card-header bg-white border-0 py-3">
+          <ul class="nav nav-tabs" id="configTabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#cfg-general"><i class="bi bi-info-circle me-1"></i>General</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cfg-turno"><i class="bi bi-clock me-1"></i>Turno / Poller</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cfg-bitacora"><i class="bi bi-journal-check me-1"></i>Bitácora</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cfg-seguridad"><i class="bi bi-shield-lock me-1"></i>Seguridad</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cfg-flags"><i class="bi bi-toggles me-1"></i>Feature Flags</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cfg-patios"><i class="bi bi-geo-alt me-1"></i>Patios</a></li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content" id="configTabContent">
+
+            <!-- ── TAB: GENERAL ── -->
+            <div class="tab-pane fade show active" id="cfg-general">
+              <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold">Nombre de la aplicación</label>
+                  <input type="text" id="cfg_app_nombre" class="form-control" placeholder="Bitácora E.E">
+                  <div class="form-text">Aparece en el encabezado del sidebar y títulos.</div>
+                </div>
+              </div>
+              <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" onclick="cfgSave('general')"><i class="bi bi-floppy me-1"></i>Guardar cambios</button>
+                <div id="cfg-general-msg" class="d-flex align-items-center"></div>
+              </div>
+            </div>
+
+            <!-- ── TAB: TURNO / POLLER ── -->
+            <div class="tab-pane fade" id="cfg-turno">
+              <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Hora de corte del contador diario</label>
+                  <div class="input-group">
+                    <input type="number" id="cfg_turno_hora" class="form-control" min="0" max="23" placeholder="8">
+                    <span class="input-group-text">h</span>
+                  </div>
+                  <div class="form-text">Después de esta hora inicia el nuevo día laboral (0–23).</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Intervalo del poller</label>
+                  <div class="input-group">
+                    <input type="number" id="cfg_poller_intervalo" class="form-control" min="1" max="120" placeholder="5">
+                    <span class="input-group-text">min</span>
+                  </div>
+                  <div class="form-text">Frecuencia de sincronización automática con BUSAE/Genesis.</div>
+                </div>
+              </div>
+              <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Sincronización BUSAE</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="cfg_poller_busae" role="switch">
+                    <label class="form-check-label" for="cfg_poller_busae">Activa</label>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Sincronización Genesis</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="cfg_poller_genesis" role="switch">
+                    <label class="form-check-label" for="cfg_poller_genesis">Activa</label>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" onclick="cfgSave('turno')"><i class="bi bi-floppy me-1"></i>Guardar cambios</button>
+                <div id="cfg-turno-msg" class="d-flex align-items-center"></div>
+              </div>
+            </div>
+
+            <!-- ── TAB: BITÁCORA ── -->
+            <div class="tab-pane fade" id="cfg-bitacora">
+              <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Cuota diaria por defecto</label>
+                  <input type="number" id="cfg_bitacora_cuota" class="form-control" min="0" max="500" placeholder="10">
+                  <div class="form-text">Cuota asignada a nuevos usuarios al crearlos.</div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Filtrar por patio propio</label>
+                  <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" id="cfg_solo_mi_patio" role="switch">
+                    <label class="form-check-label" for="cfg_solo_mi_patio">Técnico solo ve buses de su patio</label>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" onclick="cfgSave('bitacora')"><i class="bi bi-floppy me-1"></i>Guardar cambios</button>
+                <div id="cfg-bitacora-msg" class="d-flex align-items-center"></div>
+              </div>
+            </div>
+
+            <!-- ── TAB: SEGURIDAD ── -->
+            <div class="tab-pane fade" id="cfg-seguridad">
+              <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Intentos máx. de login</label>
+                  <input type="number" id="cfg_login_max" class="form-control" min="1" max="20" placeholder="5">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Minutos de bloqueo</label>
+                  <input type="number" id="cfg_login_bloqueo" class="form-control" min="1" max="1440" placeholder="15">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Duración de sesión</label>
+                  <div class="input-group">
+                    <input type="number" id="cfg_sesion_horas" class="form-control" min="1" max="72" placeholder="8">
+                    <span class="input-group-text">h</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" onclick="cfgSave('seguridad')"><i class="bi bi-floppy me-1"></i>Guardar cambios</button>
+                <div id="cfg-seguridad-msg" class="d-flex align-items-center"></div>
+              </div>
+            </div>
+
+            <!-- ── TAB: FEATURE FLAGS ── -->
+            <div class="tab-pane fade" id="cfg-flags">
+              <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                  <div class="card border p-3" style="border-radius:10px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-semibold"><i class="bi bi-ticket-perforated me-1 text-primary"></i>Módulo de Tickets</div>
+                        <div class="form-text">Permite crear y gestionar tickets de soporte.</div>
+                      </div>
+                      <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="cfg_ff_tickets" role="switch">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card border p-3" style="border-radius:10px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-semibold"><i class="bi bi-floppy2 me-1 text-success"></i>Borradores</div>
+                        <div class="form-text">Guarda borradores de formulario antes de enviar.</div>
+                      </div>
+                      <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="cfg_ff_borradores" role="switch">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card border p-3" style="border-radius:10px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-semibold"><i class="bi bi-file-earmark-excel me-1 text-success"></i>Exportar Excel</div>
+                        <div class="form-text">Habilita exportación de bitácoras a Excel.</div>
+                      </div>
+                      <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="cfg_ff_excel" role="switch">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" onclick="cfgSave('flags')"><i class="bi bi-floppy me-1"></i>Guardar cambios</button>
+                <div id="cfg-flags-msg" class="d-flex align-items-center"></div>
+              </div>
+            </div>
+
+            <!-- ── TAB: PATIOS ── -->
+            <div class="tab-pane fade" id="cfg-patios">
+              <div class="d-flex justify-content-between align-items-center mt-1 mb-3">
+                <span class="fw-semibold">Listado de patios del sistema</span>
+                <button class="btn btn-sm btn-primary" onclick="patioModalAbrir(null)"><i class="bi bi-plus-lg me-1"></i>Nuevo patio</button>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle" id="tblPatios">
+                  <thead class="table-light">
+                    <tr>
+                      <th>#</th><th>Código</th><th>Nombre</th><th>COE</th><th>Orden</th><th>Estado</th><th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbodyPatios"><tr><td colspan="7" class="text-center text-muted">Cargando…</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div><!-- /tab-content -->
+        </div><!-- /card-body -->
+      </div><!-- /card -->
+    </div><!-- /section-configuracion -->
+
+    <!-- Modal: Nuevo / Editar Patio -->
+    <div class="modal fade" id="modalPatio" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalPatioTitle">Nuevo patio</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="patioPk">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Código <span class="text-danger">*</span></label>
+              <input type="text" id="patioCodigo" class="form-control" placeholder="CHORRILLO" maxlength="30">
+              <div class="form-text">Sin espacios, en mayúsculas. No editable después de crear.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+              <input type="text" id="patioNombre" class="form-control" placeholder="Chorrillo" maxlength="80">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">COE</label>
+              <input type="text" id="patioCoe" class="form-control" placeholder="P-CHORRILLO" maxlength="20">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Orden</label>
+              <input type="number" id="patioOrden" class="form-control" value="99" min="0" max="999">
+            </div>
+            <div class="mb-3 form-check form-switch" id="patioActivoWrap" style="display:none!important;">
+              <input class="form-check-input" type="checkbox" id="patioActivo" checked>
+              <label class="form-check-label" for="patioActivo">Activo</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-primary" onclick="patioGuardar()"><i class="bi bi-floppy me-1"></i>Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="section-genesis" class="section-panel d-none">
+        <!-- Health / Status Card -->
+        <div class="card border-0 shadow-sm mb-4" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div>
+                    <h6 class="fw-bold mb-0"><i class="bi bi-cpu text-primary me-2"></i>Salud y Monitoreo del Poller</h6>
+                    <small class="text-muted">Estado en tiempo real de las sincronizaciones con Genesis y BUSAE</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadPollerHealth()">
+                        <i class="bi bi-arrow-clockwise"></i> Refrescar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="syncPollerNow('all')">
+                        <i class="bi bi-arrow-repeat me-1"></i> Sincronizar Todo Ahora
+                    </button>
+                </div>
+            </div>
+            <div class="card-body pt-0">
+                <div class="row g-3" id="pollerHealthCards">
+                    <!-- BUSAE Health -->
+                    <div class="col-md-6">
+                        <div class="border rounded-3 p-3 bg-light h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold"><i class="bi bi-broadcast text-info me-1"></i> BUSAE Telemetría</span>
+                                <span class="badge bg-secondary" id="busaeHealthBadge">Consultando...</span>
+                            </div>
+                            <div class="small text-muted mb-1">Último éxito: <strong class="text-dark" id="busaeHealthLast">—</strong></div>
+                            <div class="small text-muted mb-1">Antigüedad: <strong class="text-dark" id="busaeHealthAgo">—</strong></div>
+                            <div class="small text-muted mb-1">Buses registrados: <strong class="text-dark" id="busaeHealthTotal">0</strong></div>
+                            <div class="small text-muted" id="busaeHealthError"></div>
+                        </div>
+                    </div>
+                    <!-- Genesis Health -->
+                    <div class="col-md-6">
+                        <div class="border rounded-3 p-3 bg-light h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold"><i class="bi bi-signpost-split text-warning me-1"></i> Genesis Monitoreo</span>
+                                <span class="badge bg-secondary" id="genesisHealthBadge">Consultando...</span>
+                            </div>
+                            <div class="small text-muted mb-1">Último éxito: <strong class="text-dark" id="genesisHealthLast">—</strong></div>
+                            <div class="small text-muted mb-1">Antigüedad: <strong class="text-dark" id="genesisHealthAgo">—</strong></div>
+                            <div class="small text-muted mb-1">Buses registrados: <strong class="text-dark" id="genesisHealthTotal">0</strong></div>
+                            <div class="small text-muted" id="genesisHealthError"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- CARGA MANUAL GENESIS -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius:12px;">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-cloud-upload text-primary me-2"></i>Carga manual Genesis (CSV)</h6>
+                        <p class="text-muted small">Carga manual de monitoreo Genesis. Columnas: <code>bus_movil, origen, destino, patio, hora_entrada, estado, ruta</code></p>
+                        <div class="mb-3">
+                            <input type="file" id="genesisCSV" accept=".csv" class="form-control">
+                        </div>
+                        <button class="btn btn-accent" onclick="importGenesis()"><i class="bi bi-cloud-upload me-1"></i> Importar Genesis</button>
+                        <div id="genesisResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARGA MANUAL BUSAE -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius:12px;">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Carga manual BUSAE (CSV)</h6>
+                        <p class="text-muted small">Carga manual de mapa/telemetría BUSAE. Columnas: <code>bus_movil, estado, latitud, longitud, velocidad, ultima_transmision, manos_libres, telefono</code></p>
+                        <div class="mb-3">
+                            <input type="file" id="busaeCSV" accept=".csv" class="form-control">
+                        </div>
+                        <button class="btn btn-success" onclick="importBusae()"><i class="bi bi-cloud-upload me-1"></i> Importar BUSAE</button>
+                        <div id="busaeResult" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE TELEMETRÍA Y SINCRONIZACIÓN DE LA FLOTA -->
+        <div class="card border-0 shadow-sm mt-4" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h6 class="fw-bold mb-0"><i class="bi bi-broadcast text-primary me-2"></i>Registros Sincronizados de Flota & Telemetría</h6>
+                    <small class="text-muted">Estado integrado de Genesis (monitoreo) y BUSAE (telemetría GPS)</small>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <input type="search" id="genesisQ" class="form-control form-control-sm" placeholder="Buscar bus..." style="width:130px" oninput="loadGenesisTable()">
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadGenesisTable()"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-modern mb-0" id="tablaGenesisSync">
+                    <thead style="background:#1e293b;color:#fff;">
+                        <tr>
+                            <th>BUS</th>
+                            <th>PLACA</th>
+                            <th>PATIO</th>
+                            <th>ESTADO GENESIS</th>
+                            <th>ESTADO BUSAE</th>
+                            <th>SISTEMA INSTALADO</th>
+                            <th>FIRMWARE</th>
+                            <th>BOCINA</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="genesisTotal"></span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="genesisPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGenesisPage(1)">
+                        <option value="25">25</option><option value="50" selected>50</option><option value="100">100</option>
+                    </select>
+                    <nav id="genesisPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDITORÍA -->
+    <div id="section-auditoria" class="section-panel d-none">
+        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex gap-2 flex-wrap">
+                <span class="fw-semibold me-auto">Registro de Auditoría</span>
+                <select id="audAccion" class="form-select form-select-sm" style="width:auto" onchange="loadAuditoria()">
+                    <option value="">Todas las acciones</option>
+                    <option>LOGIN</option><option>LOGIN_FAIL</option><option>CREATE</option><option>UPDATE</option>
+                    <option>DELETE</option><option>BAJA</option><option>ASIGNAR</option><option>MOVER</option>
+                    <option>ATENDER</option><option>IMPORT</option>
+                </select>
+                <input type="date" id="audDesde" class="form-control form-control-sm" style="width:auto" onchange="loadAuditoria()">
+                <button class="btn btn-sm btn-outline-primary" onclick="loadAuditoria()"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
+            <div class="table-responsive"><table class="table table-hover table-modern mb-0 table-sm" id="tablaAuditoria"><thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Modelo</th><th>ID</th><th>Descripción</th><th>IP</th></tr></thead><tbody></tbody></table></div>
+            <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">
+                <span class="text-muted small" id="audTotal"></span>
+                <div class="ms-auto d-flex align-items-center gap-1">
+                    <select id="audPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeAudPage(1)">
+                        <option value="50" selected>50</option><option value="100">100</option><option value="200">200</option>
+                    </select>
+                    <nav id="audPagNav"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div id="section-usuarios" class="section-panel d-none">
+        <div class="card border-0 shadow-sm" style="border-radius:12px;">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between">
+                <span class="fw-semibold">Gestión de Usuarios</span>
+                <button class="btn btn-sm btn-accent" onclick="showUsuarioForm()"><i class="bi bi-plus"></i> Agregar</button>
+            </div>
+            <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaUsuarios"><thead><tr><th>Código</th><th>Nombre</th><th>Patio</th><th>Cuota</th><th>Rol</th><th></th></tr></thead><tbody></tbody></table></div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ═══════ MODAL BITÁCORA 2026 ═══════ -->
+
+<style>
+#modalBitacora .modal-dialog { max-height: 95vh; margin: 1rem auto; }
+#modalBitacora .modal-content { max-height: 95vh; display: flex; flex-direction: column; }
+#modalBitacora .modal-body {
+  overflow-y: auto !important;
+  max-height: calc(95vh - 140px);
+  flex: 1 1 auto;
+  -webkit-overflow-scrolling: touch;
+}
+#modalBitacora .modal-footer { flex-shrink: 0; position: sticky; bottom: 0; z-index: 2; }
+#modalBitacora .form-section {
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+  background: #fafbfc;
+}
+#modalBitacora .form-section h6 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: #3949AB;
+  margin-bottom: .75rem;
+}
+#modalBitacora .nav-form-steps {
+  display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1rem;
+}
+#modalBitacora .nav-form-steps a {
+  font-size: .75rem; padding: .25rem .55rem; border-radius: 999px;
+  background: #e8eaf6; color: #1A237E; text-decoration: none;
+}
+#modalBitacora .nav-form-steps a:hover { background: #c5cae9; }
+</style>
+
+<div class="modal fade" id="modalBitacora" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width:960px; max-height:96vh; margin:1vh auto;">
+    <div class="modal-content border-0 shadow" style="max-height:96vh; display:flex; flex-direction:column;">
+      <div class="modal-header text-white" style="background:linear-gradient(135deg,#1A237E,#3949AB);">
+        <div>
+          <h5 class="modal-title mb-0"><i class="bi bi-clipboard2-pulse me-2"></i>Revisión Equip. Embarcado</h5>
+          <small class="opacity-75" id="modalBusLabel">Bus —</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="atencionForm" onsubmit="enviarBitacora(event)">
+        <div class="modal-body p-4" style="overflow-y:auto !important; max-height:calc(96vh - 150px); flex:1 1 auto;">
+          <input type="hidden" id="formSource">
+          <input type="hidden" id="formReportId">
+          <div id="formEngineMeta" class="small text-muted mb-2"></div>
+          <div id="formEngineRoot" class="form-engine">
+            <div class="text-center text-muted py-4">Cargando formulario…</div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light" style="flex-shrink:0;">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-accent px-4 fw-semibold">
+            <i class="bi bi-send-fill me-1"></i> Enviar bitácora
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal detalle bitácora (trazabilidad completa) -->
+<div class="modal fade" id="modalDetalleBitacora" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header text-white" style="background:linear-gradient(135deg,#1A237E,#3949AB);">
+        <h5 class="modal-title mb-0"><i class="bi bi-clipboard2-data me-2"></i>Detalle de atención</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4" id="detalleBitacoraBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Usuario -->
+{% if is_admin %}
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:14px; overflow:hidden;">
+      <form id="formUsuario" onsubmit="submitUsuario(event)">
+        <div class="modal-header text-white" style="background:linear-gradient(135deg,#1A237E,#3949AB);">
+          <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalUsuarioTitle">
+            <i class="bi bi-person-gear"></i> Gestión de Usuario
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Código de Empleado <span class="text-danger">*</span></label>
+              <input type="text" id="usrCodigo" class="form-control" placeholder="ej. 13283" required autocomplete="off">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Rol del Sistema <span class="text-danger">*</span></label>
+              <select id="usrRol" class="form-select" required>
+                <option value="TECNICO">Técnico de Campo</option>
+                <option value="SUPERVISOR">Supervisor</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>
+              <input type="text" id="usrNombre" class="form-control" placeholder="ej. Juan Pérez" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Patio Asignado</label>
+              <select id="usrPatio" class="form-select">
+                <option value="">— Sin patio fijo —</option>
+                {% for p in patios %}
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Cuota Diaria</label>
+              <input type="number" id="usrCuota" class="form-control" min="0" value="0">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Correo Electrónico</label>
+              <input type="email" id="usrEmail" class="form-control" placeholder="usuario@miempresa.com">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold d-flex justify-content-between">
+                <span>Contraseña</span>
+                <span class="small text-muted fw-normal" id="usrPasswordLabelHint"></span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-shield-lock"></i></span>
+                <input type="password" id="usrPassword" class="form-control" autocomplete="new-password">
+                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('usrPassword', this)" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+              <div class="form-text small" id="usrPasswordHelp"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 bg-light py-2">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary fw-semibold"><i class="bi bi-check-lg me-1"></i> Guardar Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Restablecer Contraseña -->
+<div class="modal fade" id="modalResetPassword" tabindex="-1" aria-labelledby="modalResetPasswordTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:14px; overflow:hidden;">
+      <form id="formResetPassword" onsubmit="submitResetPassword(event)">
+        <div class="modal-header bg-warning bg-opacity-25 border-0 py-3">
+          <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalResetPasswordTitle">
+            <i class="bi bi-key-fill text-warning fs-5"></i> Restablecer Contraseña
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="resetPwdCodigo">
+          <div class="p-3 mb-3 rounded-3" style="background:#f8f9fa; border:1px solid #e9ecef;">
+            <div class="small text-muted">Usuario:</div>
+            <div class="fw-bold fs-6 text-dark" id="resetPwdUsuarioNombre">—</div>
+            <div class="small text-secondary" id="resetPwdUsuarioCodigo"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nueva Contraseña <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
+              <input type="password" id="resetPwdInput" class="form-control" placeholder="Mínimo 4 caracteres" minlength="4" required autocomplete="new-password">
+              <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('resetPwdInput', this)" tabindex="-1">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="alert alert-info py-2 px-3 small mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle-fill fs-5 text-info flex-shrink-0"></i>
+            <div>Esta acción cambiará la contraseña y <strong>desbloqueará la cuenta</strong> automáticamente si estaba bloqueada por intentos fallidos.</div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 bg-light py-2">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning fw-semibold"><i class="bi bi-key me-1"></i> Confirmar Restablecimiento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Flota Alta -->
+<div class="modal fade" id="modalFlota" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+<form onsubmit="submitFlotaAlta(event)">
+    <div class="modal-header"><h5 class="modal-title">Alta de Bus</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Número de bus</label><input type="number" id="flotaBus" class="form-control" required></div>
+        <div class="mb-3"><label class="form-label">Placa</label><input type="text" id="flotaPlaca" class="form-control"></div>
+        <div class="mb-3"><label class="form-label">Modelo</label><input type="text" id="flotaModelo" class="form-control"></div>
+        <div class="mb-3"><label class="form-label">Año</label><input type="number" id="flotaAnio" class="form-control" min="1990" max="2030"></div>
+        <div class="mb-3"><label class="form-label">Patio base</label>
+            <select id="flotaPatio" class="form-select"><option value="">—</option>{% for p in patios %}<option value="{{ p.codigo }}">{{ p.nombre }}</option>{% endfor %}</select>
+        </div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>
+</form></div></div></div>
+
+<!-- Modal GPS Alta -->
+<div class="modal fade" id="modalGPS" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+<form onsubmit="submitGPSAlta(event)">
+    <div class="modal-header"><h5 class="modal-title">Alta de GPS</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <div class="mb-3"><label class="form-label">IMEI</label><input type="text" id="gpsImei" class="form-control" required pattern="\d{15}" title="15 dígitos"></div>
+        <div class="mb-3"><label class="form-label">Modelo</label><input type="text" id="gpsModelo" class="form-control"></div>
+        <div class="mb-3"><label class="form-label">Serie</label><input type="text" id="gpsSerie" class="form-control"></div>
+        <div class="mb-3"><label class="form-label">Teléfono SIM</label><input type="text" id="gpsTel" class="form-control"></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>
+</form></div></div></div>
+{% endif %}
+
+
+<!-- MODAL REPORTAR PROBLEMA / NUEVO TICKET (T6.2) -->
+<div class="modal fade" id="modalReportarProblema" tabindex="-1" aria-labelledby="modalReportarProblemaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius:14px; overflow:hidden;">
+      <div class="modal-header bg-warning bg-opacity-25 border-0 py-3">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="modalReportarProblemaLabel">
+          <i class="bi bi-exclamation-octagon-fill text-danger fs-4"></i> Reportar problema / Incidencia
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <form id="formReportarProblema" onsubmit="guardarNuevoTicket(event)">
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Título de la incidencia <span class="text-danger">*</span></label>
+            <input type="text" id="tkNuevoTitulo" class="form-control" placeholder="Ej: GPS no transmite tras cambio de batería" required maxlength="200">
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Categoría <span class="text-danger">*</span></label>
+              <select id="tkNuevoCategoria" class="form-select" required>
+                <option value="GPS">GPS / Conectividad</option>
+                <option value="EQUIPO_EMBARCADO" selected>Equipo Embarcado / Hardware</option>
+                <option value="APLICACION">Aplicación / Sistema</option>
+                <option value="PATIO">Patio / Operaciones</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Prioridad <span class="text-danger">*</span></label>
+              <select id="tkNuevoPrioridad" class="form-select" required>
+                <option value="BAJA">Baja</option>
+                <option value="MEDIA" selected>Media</option>
+                <option value="ALTA">Alta</option>
+                <option value="CRITICA">🚨 Crítica</option>
+              </select>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Bus / Móvil relacionado (opcional)</label>
+              <input type="number" id="tkNuevoBus" class="form-control" placeholder="Ej: 1045" min="1" max="9999">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Patio (opcional)</label>
+              <select id="tkNuevoPatio" class="form-select">
+                <option value="">Seleccionar patio…</option>
+                {% for p in patios %}
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label fw-semibold small">Descripción detallada <span class="text-danger">*</span></label>
+            <textarea id="tkNuevoDescripcion" class="form-control" rows="4" placeholder="Describe los síntomas del problema, el comportamiento observado y cualquier acción previa..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnGuardarTicket">
+            <i class="bi bi-send me-1"></i> Enviar ticket
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE / SEGUIMIENTO DE TICKET (T6.3) -->
+<div class="modal fade" id="modalDetalleTicket" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow" style="border-radius:14px; overflow:hidden;">
+      <div class="modal-header border-bottom py-3">
+        <div class="w-100 me-2">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge" id="tkDetalleBadgeEstado">ABIERTO</span>
+            <span class="badge" id="tkDetalleBadgePrioridad">MEDIA</span>
+            <span class="text-muted small" id="tkDetalleId">Ticket #</span>
+          </div>
+          <h5 class="modal-title fw-bold mb-0 text-dark" id="tkDetalleTitulo">Título del ticket</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Metadatos del ticket -->
+        <div class="row g-2 mb-3 bg-light p-3 rounded-3 small border">
+          <div class="col-sm-6">
+            <div><strong class="text-muted">Reportado por:</strong> <span id="tkDetalleCreador" class="fw-semibold">—</span></div>
+            <div><strong class="text-muted">Fecha creación:</strong> <span id="tkDetalleFecha">—</span></div>
+            <div><strong class="text-muted">Categoría:</strong> <span id="tkDetalleCategoria">—</span></div>
+          </div>
+          <div class="col-sm-6">
+            <div><strong class="text-muted">Bus móvil:</strong> <span id="tkDetalleBus" class="badge bg-dark bg-opacity-75">—</span></div>
+            <div><strong class="text-muted">Patio:</strong> <span id="tkDetallePatio">—</span></div>
+            <div><strong class="text-muted">Asignado a:</strong> <span id="tkDetalleAsignado" class="fw-semibold text-primary">—</span></div>
+          </div>
+        </div>
+
+        <!-- Descripción original -->
+        <div class="mb-3">
+          <label class="form-label fw-bold text-dark small text-uppercase mb-1">Descripción del problema</label>
+          <div class="p-3 bg-light border rounded-3 text-secondary" id="tkDetalleDescripcion" style="white-space: pre-wrap; font-size: 0.95rem;"></div>
+        </div>
+
+        <!-- Sección de Resolución si existe -->
+        <div id="tkDetalleResolucionBox" class="p-3 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 mb-3 d-none">
+          <div class="d-flex align-items-center gap-2 text-success fw-bold mb-1">
+            <i class="bi bi-check-circle-fill"></i> Resolución registrada
+            <span class="small text-muted fw-normal ms-auto" id="tkDetalleResueltoEn"></span>
+          </div>
+          <div class="small text-dark" id="tkDetalleResolucionTexto" style="white-space: pre-wrap;"></div>
+        </div>
+
+        <!-- Barra de acciones rápidas (cambiar estado / asignar / resolver) -->
+        <div class="card border mb-3 bg-light bg-opacity-50">
+          <div class="card-body p-3">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-5">
+                <label class="form-label small fw-semibold mb-1">Cambiar estado:</label>
+                <div class="input-group input-group-sm">
+                  <select id="tkAccionEstadoSelect" class="form-select form-select-sm">
+                    <option value="ABIERTO">Abierto</option>
+                    <option value="EN_PROGRESO">En Progreso</option>
+                    <option value="RESUELTO">Resuelto</option>
+                    <option value="CERRADO">Cerrado</option>
+                  </select>
+                  <button class="btn btn-outline-primary" type="button" onclick="ejecutarCambioEstadoTicket()">Aplicar</button>
+                </div>
+              </div>
+              <div class="col-md-4" id="tkColAsignar">
+                <label class="form-label small fw-semibold mb-1">Asignar a:</label>
+                <div class="input-group input-group-sm">
+                  <select id="tkAccionAsignarSelect" class="form-select form-select-sm">
+                    <option value="">Sin asignar</option>
+                    {% for t in tecnicos %}
+                    <option value="{{ t.codigo }}">{{ t.nombre }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-outline-secondary" type="button" onclick="ejecutarAsignarTicket()">Asignar</button>
+                </div>
+              </div>
+              <div class="col-md-3 text-md-end mt-2 mt-md-4">
+                <button class="btn btn-sm btn-success w-100" type="button" onclick="mostrarPromptResolverTicket()">
+                  <i class="bi bi-check2-all me-1"></i> Resolver
+                </button>
+              </div>
+            </div>
+            <!-- Formulario desplegable para resolución -->
+            <div id="tkBoxResolverForm" class="mt-3 p-3 bg-white border rounded-3 d-none">
+              <label class="form-label small fw-bold text-success">Detalle de cómo se resolvió la incidencia:</label>
+              <textarea id="tkTextoResolucion" class="form-control form-control-sm mb-2" rows="2" placeholder="Describe la solución aplicada, repuestos utilizados o pruebas realizadas..."></textarea>
+              <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('tkBoxResolverForm').classList.add('d-none')">Cancelar</button>
+                <button type="button" class="btn btn-sm btn-success" onclick="confirmarResolverTicket()">Confirmar resolución</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline de comentarios / notas -->
+        <div>
+          <label class="form-label fw-bold text-dark small text-uppercase mb-2">
+            <i class="bi bi-chat-left-text me-1"></i> Seguimiento y comentarios (<span id="tkComentariosCount">0</span>)
+          </label>
+          <div id="tkComentariosList" class="d-flex flex-column gap-2 mb-3 p-2 bg-light rounded-3" style="max-height: 220px; overflow-y: auto;">
+            <!-- Comentarios dinámicos -->
+          </div>
+          <!-- Formulario nuevo comentario -->
+          <div class="input-group">
+            <textarea id="tkNuevoComentarioTexto" class="form-control form-control-sm" rows="1" placeholder="Escribir una nota o respuesta..."></textarea>
+            <button class="btn btn-primary btn-sm px-3" type="button" onclick="enviarComentarioTicket()">
+              <i class="bi bi-send"></i> Comentar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 py-2">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showSection(name) {
+    if (window.innerWidth < 992 && typeof cerrarSidebar === 'function') {
+        cerrarSidebar();
+    }
+    // Asegurar que la vista y barra de navegación queden estáticos arriba al navegar
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    document.querySelectorAll('.section-panel').forEach(el => el.classList.add('d-none'));
+    const el = document.getElementById('section-' + name);
+    if (el) el.classList.remove('d-none');
+    document.querySelectorAll('.sidebar nav a[data-section]').forEach(a => a.classList.toggle('active', a.dataset.section === name));
+    const titles = {bitacora:'Bitácora',historial:'Historial de atenciones',formulario:'Editor del formulario',reportes:'Reportes GPS Offline',inventario:'Inventario',resumen:'Resumen',tickets:'Tickets / Soporte Técnico',flota:'Flota / Buses',gps:'Dispositivos GPS',genesis:'Poller & Sincronización',auditoria:'Auditoría',usuarios:'Usuarios',configuracion:'Configuración del Sistema'};
+    document.getElementById('sectionTitle').textContent = titles[name] || name;
+    if (name==='bitacora' && typeof loadBitacora === 'function') loadBitacora();
+    if (name==='historial' && typeof loadHistorial === 'function') loadHistorial();
+    if (name==='formulario' && typeof loadFormEditor === 'function') loadFormEditor();
+    if (name==='reportes' && typeof loadReportes === 'function') loadReportes();
+    if (name==='inventario' && typeof loadInventario === 'function') loadInventario();
+    if (name==='resumen' && typeof loadResumen === 'function') loadResumen();
+    if (name==='tickets' && typeof loadTickets === 'function') loadTickets();
+    if (name==='flota' && typeof loadFlota === 'function') loadFlota();
+    if (name==='gps' && typeof loadGPS === 'function') loadGPS();
+    if (name==='genesis' && typeof loadPollerHealth === 'function') loadPollerHealth();
+    if (name==='auditoria' && typeof loadAuditoria === 'function') loadAuditoria();
+    if (name==='usuarios' && typeof loadUsuarios === 'function') loadUsuarios();
+    if (name==='configuracion' && typeof loadConfig === 'function') loadConfig();
+}
+
+
+
+async function loadHistorial() {
+    showLoading();
+    const bus = document.getElementById('histBus')?.value || '';
+    const soloMios = document.getElementById('histSoloMios')?.checked ? '1' : '';
+    try {
+        const params = new URLSearchParams();
+        if (bus) params.set('bus', bus);
+        if (soloMios) params.set('solo_mios', '1');
+        const r = await fetch('/api/bitacoras/?' + params.toString());
+        const j = await r.json();
+        const allData = j.data || [];
+        const ps = +(document.getElementById('histPageSize')?.value || 25);
+
+        function renderHistRow(row) {
+            const gpsColor = row.gps === 'FUNCIONA' ? 'success' : (row.gps ? 'danger' : 'secondary');
+            const radioBadge = row.radio_badge || 'secondary';
+            return `
+                <td class="small text-nowrap">${row.fecha || ''}</td>
+                <td><strong>${row.bus}</strong></td>
+                <td>${row.patio || '—'}</td>
+                <td><span class="badge bg-primary">${row.tipo_display || row.tipo || '—'}</span></td>
+                <td class="small">${row.tecnico || '—'}</td>
+                <td><span class="badge bg-${gpsColor}">${row.gps_display || row.gps || '—'}</span></td>
+                <td class="small">${row.vandalismo_display || 'Ninguno'}</td>
+                <td><span class="badge bg-${radioBadge}">${row.radio_resumen || '—'}</span></td>
+                <td class="small">${row.ctap_display || row.ctap || '—'}</td>
+                <td><button type="button" class="btn btn-sm btn-outline-primary" onclick="verDetalleBitacora(${row.id})"><i class="bi bi-eye me-1"></i>Ver todo</button></td>`;
+        }
+
+        paginate('hist', allData, 1, ps, renderHistRow, '#tablaHistorial tbody', 'histPagNav', 'histTotal');
+    } catch (e) {
+        showToast('Error cargando historial');
+    }
+    hideLoading();
+}
+
+async function verDetalleBitacora(id) {
+    showLoading();
+    try {
+        const r = await fetch('/api/bitacoras/?id=' + encodeURIComponent(id));
+        const j = await r.json();
+        hideLoading();
+        if (j.status !== 'ok' || !j.data) {
+            showToast(j.message || 'No se pudo cargar el detalle');
+            return;
+        }
+        const d = j.data;
+        const body = document.getElementById('detalleBitacoraBody');
+        const modalEl = document.getElementById('modalDetalleBitacora');
+        if (!body || !modalEl) {
+            showToast('Modal de detalle no encontrado — recarga con Ctrl+Shift+R');
+            return;
+        }
+        const checkIcon = '<span class="badge bg-success-subtle text-success border border-success px-2 py-1"><i class="bi bi-check-lg"></i> SI</span>';
+        const crossIcon = '<span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1"><i class="bi bi-x-lg"></i> NO</span>';
+
+        body.innerHTML = `
+          <div class="row g-3 bg-light p-3 rounded border mb-3">
+            <div class="col-md-3"><div class="text-muted small">Fecha</div><div class="fw-semibold">${d.fecha || '—'}</div></div>
+            <div class="col-md-2"><div class="text-muted small">Bus</div><div class="fw-bold fs-5 text-primary">${d.bus}</div></div>
+            <div class="col-md-3"><div class="text-muted small">Patio</div><div class="fw-semibold">${d.patio || '—'}</div></div>
+            <div class="col-md-2"><div class="text-muted small">Tipo</div><div><span class="badge bg-primary">${d.tipo_display || d.tipo || '—'}</span></div></div>
+            <div class="col-md-2"><div class="text-muted small">Origen</div><div class="small">${d.source || '—'}</div></div>
+            <div class="col-md-6"><div class="text-muted small">Técnico</div><div class="fw-semibold">${d.tecnico || '—'} <span class="text-muted">(${d.codigo_tecnico || ''})</span></div></div>
+            <div class="col-md-6"><div class="text-muted small">Report ID</div><div class="small">${d.report_id || '—'}</div></div>
+          </div>
+
+          <h6 class="text-primary fw-bold mb-2"><i class="bi bi-geo-alt me-1"></i> 2–3. GPS y Vandalismo</h6>
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <div class="p-2 border rounded bg-light">
+                <span class="text-muted small d-block">Estado GPS</span>
+                <span class="badge bg-${d.gps==='FUNCIONA'?'success':'danger'} mt-1">${d.gps_display || d.gps || '—'}</span>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="p-2 border rounded bg-light">
+                <span class="text-muted small d-block">Vandalismo</span>
+                <div class="fw-semibold mt-1">${d.vandalismo_display || 'Ninguno'}</div>
+              </div>
+            </div>
+          </div>
+
+          <h6 class="text-primary fw-bold mb-2"><i class="bi bi-cpu me-1"></i> 4–6. SIM / Adecuación / CTAP</h6>
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <div class="p-2 border rounded bg-light">
+                <span class="text-muted small d-block">SIMCARD (Vandalismo)</span>
+                <div class="fw-semibold mt-1">${d.simcard_display || '—'}</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 border rounded bg-light">
+                <span class="text-muted small d-block">Adecuación eléctrica</span>
+                <div class="fw-semibold mt-1">${d.adecuacion_display || '—'}</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-2 border rounded bg-light">
+                <span class="text-muted small d-block">CTAP</span>
+                <div class="fw-semibold mt-1">${d.ctap_display || '—'}</div>
+              </div>
+            </div>
+          </div>
+
+          <h6 class="text-primary fw-bold mb-2"><i class="bi bi-broadcast me-1"></i> 7. Radio Base</h6>
+          <div class="row g-3 mb-3">
+            <!-- Tabla 1: Radio Base (Perilla, Pedal, Pantalla) -->
+            <div class="col-md-4">
+              <div class="border rounded p-2 bg-light h-100">
+                <div class="small fw-bold text-secondary mb-2 text-uppercase">Radio base</div>
+                <table class="table table-sm table-bordered bg-white text-center align-middle mb-0">
+                  <thead class="table-light"><tr><th class="text-start">Componente</th><th>Estado</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-start fw-semibold small">Perilla</td>
+                      <td><span class="badge bg-${d.radio_perilla==='FUNCIONA'?'success':(d.radio_perilla?'danger':'secondary')}">${d.radio_perilla_display || '—'}</span></td>
+                    </tr>
+                    <tr>
+                      <td class="text-start fw-semibold small">Pedal</td>
+                      <td><span class="badge bg-${d.radio_pedal==='FUNCIONA'?'success':(d.radio_pedal?'danger':'secondary')}">${d.radio_pedal_display || '—'}</span></td>
+                    </tr>
+                    <tr>
+                      <td class="text-start fw-semibold small">Pantalla</td>
+                      <td><span class="badge bg-${d.radio_pantalla==='FUNCIONA'?'success':(d.radio_pantalla?'danger':'secondary')}">${d.radio_pantalla_display || '—'}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tabla 2: Radio Base 1 (Conexión → SIMCARD) -->
+            <div class="col-md-4">
+              <div class="border rounded p-2 bg-light h-100">
+                <div class="small fw-bold text-secondary mb-2 text-uppercase">Radio base 1</div>
+                <table class="table table-sm table-bordered bg-white text-center align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th rowspan="2" class="align-middle text-start" style="width:40%;"></th>
+                      <th class="small fw-bold py-1 bg-light" colspan="2">SIMCARD</th>
+                    </tr>
+                    <tr>
+                      <th class="small py-1 text-muted">SI</th>
+                      <th class="small py-1 text-muted">NO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-start fw-semibold small bg-light">Conexión</td>
+                      <td>${d.conexion_simcard_raw==='SI'?checkIcon:'<span class="text-muted">—</span>'}</td>
+                      <td>${d.conexion_simcard_raw==='NO'?crossIcon:'<span class="text-muted">—</span>'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tabla 3: Radio Base 2 (Instalación → Instalación) -->
+            <div class="col-md-4">
+              <div class="border rounded p-2 bg-light h-100">
+                <div class="small fw-bold text-secondary mb-2 text-uppercase">Radio base 2</div>
+                <table class="table table-sm table-bordered bg-white text-center align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th rowspan="2" class="align-middle text-start" style="width:40%;"></th>
+                      <th class="small fw-bold py-1 bg-light" colspan="2">Instalación</th>
+                    </tr>
+                    <tr>
+                      <th class="small py-1 text-muted">SI</th>
+                      <th class="small py-1 text-muted">NO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-start fw-semibold small bg-light">Instalación</td>
+                      <td>${d.instalacion_val_raw==='SI'?checkIcon:'<span class="text-muted">—</span>'}</td>
+                      <td>${d.instalacion_val_raw==='NO'?crossIcon:'<span class="text-muted">—</span>'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <h6 class="text-primary fw-bold mb-2"><i class="bi bi-file-earmark-text me-1"></i> 8. Informe Técnico</h6>
+          <div class="p-3 bg-light rounded border mb-2" style="white-space:pre-wrap;">${(d.informe || '—').replace(/</g,'&lt;')}</div>
+          <div class="text-end small text-muted">ID registro: ${d.id}</div>`;
+        new bootstrap.Modal(document.getElementById('modalDetalleBitacora')).show();
+    } catch (e) {
+        hideLoading();
+        showToast('Error al cargar detalle');
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PAGINACIÓN UNIVERSAL CLIENT-SIDE
+// ═══════════════════════════════════════════════════════════════════════════
+const _pag = {}; // {id: {data, page, render}}
+
+function paginate(id, data, page, pageSize, renderRow, tbodySelector, navId, totalId) {
+    if (!_pag[id]) _pag[id] = {};
+    _pag[id].data = data;
+    _pag[id].page = page;
+    _pag[id].pageSize = pageSize;
+    _pag[id].renderRow = renderRow;
+    _pag[id].tbodySelector = tbodySelector;
+    _pag[id].navId = navId;
+    _pag[id].totalId = totalId;
+    _renderPage(id);
+}
+
+function _renderPage(id) {
+    const s = _pag[id]; if (!s) return;
+    const {data, page, pageSize, renderRow, tbodySelector, navId, totalId} = s;
+    const total = data.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(Math.max(1, page), totalPages);
+    s.page = safePage;
+    const start = (safePage - 1) * pageSize;
+    const slice = data.slice(start, start + pageSize);
+    const tbody = document.querySelector(tbodySelector);
+    if (tbody) {
+        tbody.innerHTML = '';
+        if (slice.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4"><i class="bi bi-inbox fs-4 d-block mb-1"></i>Sin registros</td></tr>';
+        } else {
+            slice.forEach(item => { const row = tbody.insertRow(); row.innerHTML = renderRow(item); });
+        }
+    }
+    const totEl = document.getElementById(totalId);
+    if (totEl) totEl.textContent = `${total.toLocaleString()} registros · pág. ${safePage}/${totalPages}`;
+    // Render nav
+    const nav = document.getElementById(navId);
+    if (!nav) return;
+    if (totalPages <= 1) { nav.innerHTML = ''; return; }
+    const range = [];
+    if (safePage > 1) range.push(`<li class="page-item"><a class="page-link py-1 px-2" href="#" onclick="_goPage('${id}',${safePage-1});return false">‹</a></li>`);
+    let start_ = Math.max(1, safePage-2), end_ = Math.min(totalPages, safePage+2);
+    if (start_ > 1) range.push('<li class="page-item disabled"><span class="page-link py-1 px-2">1</span></li>');
+    for (let p = start_; p <= end_; p++) range.push(`<li class="page-item ${p===safePage?'active':''}"><a class="page-link py-1 px-2" href="#" onclick="_goPage('${id}',${p});return false">${p}</a></li>`);
+    if (end_ < totalPages) range.push(`<li class="page-item disabled"><span class="page-link py-1 px-2">…${totalPages}</span></li>`);
+    if (safePage < totalPages) range.push(`<li class="page-item"><a class="page-link py-1 px-2" href="#" onclick="_goPage('${id}',${safePage+1});return false">›</a></li>`);
+    nav.innerHTML = `<ul class="pagination pagination-sm mb-0">${range.join('')}</ul>`;
+}
+
+function _goPage(id, page) { if (_pag[id]) { _pag[id].page = page; _renderPage(id); } }
+
+function changeBitPage(p)   { const ps=+document.getElementById('bitPageSize').value;  if(_pag['bit'])  {_pag['bit'].pageSize=ps; _goPage('bit',p||_pag['bit'].page); }}
+function changeHistPage(p)  { const ps=+document.getElementById('histPageSize').value; if(_pag['hist']) {_pag['hist'].pageSize=ps; _goPage('hist',p||_pag['hist'].page); }}
+function changeRepPage(p)   { const ps=+document.getElementById('repPageSize').value;  if(_pag['rep'])  {_pag['rep'].pageSize=ps; _goPage('rep',p||_pag['rep'].page); }}
+function changeInvPage(p)   { const ps=+document.getElementById('invPageSize').value;  if(_pag['inv'])  {_pag['inv'].pageSize=ps; _goPage('inv',p||_pag['inv'].page); }}
+function changeFlotaPage(p) { const ps=+document.getElementById('flotaPageSize').value;if(_pag['flota']){_pag['flota'].pageSize=ps;_goPage('flota',p||_pag['flota'].page);}}
+function changeGpsPage(p)   { const ps=+document.getElementById('gpsPageSize').value;  if(_pag['gps'])  {_pag['gps'].pageSize=ps; _goPage('gps',p||_pag['gps'].page); }}
+function changeAudPage(p)   { const ps=+document.getElementById('audPageSize').value;  if(_pag['aud'])  {_pag['aud'].pageSize=ps; _goPage('aud',p||_pag['aud'].page); }}
+function changeTkPage(p)    { const ps=+document.getElementById('tkPageSize').value;   if(_pag['tk'])   {_pag['tk'].pageSize=ps; _goPage('tk',p||_pag['tk'].page); }}
+
+async function loadBitacora() {
+    showLoading();
+    const patio = document.getElementById('bitPatio')?.value || '';
+    const tecnico = document.getElementById('bitTecnico')?.value || '';
+    const q = document.getElementById('bitQ')?.value || '';
+    try {
+        const params = new URLSearchParams();
+        if (patio) params.set('patio', patio);
+        if (tecnico) params.set('tecnico', tecnico);
+        if (q) params.set('q', q);
+        const r = await fetch('/api/bitacora/cola/?' + params.toString());
+        const j = await r.json();
+        const allData = j.data || [];
+        const ps = +(document.getElementById('bitPageSize')?.value || 250);
+
+        function renderBitRow(row) {
+            const gen = row.estado_genesis || '—';
+            const genLow = gen.toLowerCase();
+            const genClass = genLow.includes('inop') ? 'danger' : (genLow.includes('oper') ? 'success' : 'secondary');
+            const bae = row.estado_busae || '—';
+            let baeClass = 'secondary';
+            if (bae === 'NO GPS') baeClass = 'danger';
+            else if (bae.includes('REVISAR')) baeClass = 'warning text-dark';
+            else if (bae === 'Active') baeClass = 'success';
+            else if (bae === 'Stopped') baeClass = 'info text-dark';
+            const payload = JSON.stringify({bus_movil:row.bus_movil,patio:row.patio,report_id:'',diagnostico:row.comentarios||row.estado_busae||''}).replace(/'/g, "&apos;");
+            return `<td>${row.tecnico||'—'}</td><td><strong>${row.bus_movil}</strong></td>
+                <td><span class="badge bg-${genClass}">${gen}</span></td>
+                <td><span class="badge bg-${baeClass}">${bae}</span></td>
+                <td>${row.patio||'—'}</td><td>${row.hora||'—'}</td>
+                <td><button class="btn btn-sm btn-accent" onclick='abrirBitacora(${payload}, "bitacora")'>Atender</button></td>`;
+        }
+        paginate('bit', allData, 1, ps, renderBitRow, '#tablaBitacora tbody', 'bitPagNav', 'bitTotal');
+        const tot = document.getElementById('bitTotal');
+        if (tot && j.filtro_patio) tot.textContent += ' · patio: ' + j.filtro_patio;
+    } catch (e) {
+        showToast('Error cargando bitácora');
+    }
+    hideLoading();
+}
+
+async function loadReportes() {
+    showLoading();
+    const patio = document.getElementById('filtroPatioReportes')?.value || '';
+    const q = document.getElementById('repQ')?.value || '';
+    try {
+        const r = await fetch('/api/reportes/' + (patio ? '?patio=' + encodeURIComponent(patio) : ''));
+        const j = await r.json();
+        let allData = j.data || [];
+        if (q) {
+            const qLow = q.toLowerCase();
+            allData = allData.filter(x => String(x.bus_movil).toLowerCase().includes(qLow) || (x.diagnostico||'').toLowerCase().includes(qLow));
+        }
+        const ps = +(document.getElementById('repPageSize')?.value || 25);
+
+        function renderRepRow(row) {
+            const payload = JSON.stringify(row).replace(/'/g, "&apos;");
+            return `<td><strong>${row.bus_movil}</strong></td>
+                <td><span class="badge bg-danger">${row.estado_gps}</span></td>
+                <td>${row.patio||'—'}</td><td>${row.fecha_reporte||''}</td><td>${row.hora_reporte||''}</td>
+                <td class="small text-muted">${(row.diagnostico||'').substring(0,50)}</td>
+                <td><button class="btn btn-sm btn-accent" onclick='abrirBitacora(${payload},"reportes")'>Atender</button></td>`;
+        }
+        paginate('rep', allData, 1, ps, renderRepRow, '#tablaReportes tbody', 'repPagNav', 'repTotal');
+    } catch(e) { showToast('Error cargando reportes'); }
+    hideLoading();
+}
+
+async function loadInventario() {
+    showLoading();
+    try {
+        const q = document.getElementById('invQ')?.value||'';
+        const params = new URLSearchParams();
+        if (q) params.set('q', q);
+        const r = await fetch('/api/inventario/?' + params.toString());
+        const j = await r.json();
+        const allData = j.data || [];
+        const ps = +(document.getElementById('invPageSize')?.value || 100);
+        function renderInvRow(row) {
+            const pl = JSON.stringify(row).replace(/'/g, "&apos;");
+            return `<td>${row.patio}</td><td><strong>${row.bus_movil}</strong></td>
+                <td>${row.hora||''}</td><td>${row.estado||''}</td><td>${row.ultima_atencion||''}</td>
+                <td>${row.fecha_actual||''}</td><td class="small">${(row.diagnostico||'').substring(0,40)}</td>
+                <td><button class="btn btn-sm btn-accent" onclick='abrirBitacora(${pl},"inventario")'>Atender</button></td>`;
+        }
+        paginate('inv', allData, 1, ps, renderInvRow, '#tablaInventario tbody', 'invPagNav', 'invTotal');
+    } catch(e) { showToast('Error inventario'); }
+    hideLoading();
+}
+
+
+
+/* ========== EDITOR VISUAL DE FORMULARIO ========== */
+let EDITOR_STATE = { id: null, definicion: { sections: [] } };
+
+async function loadFormEditor() {
+    showLoading();
+    try {
+        const r = await fetch('/api/formulario/editor/');
+        const j = await r.json();
+        if (j.status !== 'ok') { showToast(j.message || 'Error'); hideLoading(); return; }
+        EDITOR_STATE.id = j.actual.id;
+        EDITOR_STATE.definicion = j.actual.definicion || { sections: [] };
+        if (!EDITOR_STATE.definicion.sections) EDITOR_STATE.definicion.sections = [];
+        document.getElementById('editorNombre').value = j.actual.nombre || '';
+        document.getElementById('editorVersion').value = j.actual.version || '';
+        document.getElementById('editorCodigo').value = j.actual.codigo || '';
+        document.getElementById('editorActiva').checked = !!j.actual.activa;
+        editorRender();
+    } catch (e) {
+        showToast('Error cargando editor');
+    }
+    hideLoading();
+}
+
+function editorRender() {
+    const root = document.getElementById('editorSections');
+    root.innerHTML = '';
+    (EDITOR_STATE.definicion.sections || []).forEach((sec, si) => {
+        const card = document.createElement('div');
+        card.className = 'border rounded-3 p-3 bg-white';
+        card.innerHTML = `
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div class="flex-grow-1">
+              <label class="form-label small mb-1">Título de la sección</label>
+              <input type="text" class="form-control form-control-sm editor-sec-title" data-si="${si}" value="${(sec.title||'').replace(/"/g,'&quot;')}">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger mt-4" onclick="editorRemoveSection(${si})" title="Quitar sección">✕</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-2">
+              <thead class="table-light"><tr>
+                <th>Etiqueta</th><th>Clave</th><th>Tipo</th><th>Obligatorio</th><th>Opciones (una por línea: valor|texto)</th><th></th>
+              </tr></thead>
+              <tbody id="editorFields${si}"></tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary" onclick="editorAddField(${si})"><i class="bi bi-plus"></i> Campo</button>
+        `;
+        root.appendChild(card);
+        const tbody = card.querySelector('#editorFields' + si);
+        (sec.fields || []).forEach((f, fi) => {
+            tbody.appendChild(editorFieldRow(si, fi, f));
+        });
+    });
+    // bind title changes
+    root.querySelectorAll('.editor-sec-title').forEach(inp => {
+        inp.addEventListener('change', () => {
+            const si = +inp.dataset.si;
+            EDITOR_STATE.definicion.sections[si].title = inp.value;
+        });
+    });
+}
+
+function editorFieldRow(si, fi, f) {
+    f = f || {};
+    const tr = document.createElement('tr');
+    const isMatrix = f.type === 'matrix';
+    const opts = (Array.isArray(f.options) ? f.options : []).map(o => (o.value || '') + '|' + (o.label || o.value || '')).join('\n');
+    const rowsTxt = (Array.isArray(f.rows) ? f.rows : []).map(r => (r.key || '') + '|' + (r.label || r.key || '')).join('\n');
+    let colsTxt = '';
+    if (Array.isArray(f.column_groups) && f.column_groups.length) {
+        colsTxt = f.column_groups.map(g => `[${g.label || ''}]\n` + (Array.isArray(g.columns) ? g.columns : []).map(c => (c.value || '') + '|' + (c.label || c.value || '')).join('\n')).join('\n');
+    } else {
+        colsTxt = (Array.isArray(f.columns) ? f.columns : []).map(c => (c.value || '') + '|' + (c.label || c.value || '')).join('\n');
+    }
+    const types = ['single_choice','select','text','textarea','matrix','number'];
+    const typeOpts = types.map(t => `<option value="${t}" ${f.type===t?'selected':''}>${t}</option>`).join('');
+
+    let extra = '';
+    if (isMatrix) {
+        extra = `
+          <div class="border rounded p-2 bg-light mt-1">
+            <div class="small fw-semibold text-primary mb-1">Matriz — Filas (clave|etiqueta)</div>
+            <textarea class="form-control form-control-sm mb-2" data-k="matrix_rows" rows="4" style="min-width:180px" placeholder="radio_conexion|Conexión">${rowsTxt.replace(/</g,'')}</textarea>
+            <div class="small fw-semibold text-primary mb-1">Matriz — Columnas (valor|texto o [Grupo])</div>
+            <textarea class="form-control form-control-sm" data-k="matrix_cols" rows="5" style="min-width:180px" placeholder="FUNCIONA|Funciona&#10;o agrupar:&#10;[SIMCARD]&#10;SI|SI&#10;NO|NO&#10;[Instalacion]&#10;SI|SI&#10;NO|NO">${colsTxt.replace(/</g,'')}</textarea>
+          </div>`;
+    } else {
+        extra = `
+          <textarea class="form-control form-control-sm" data-k="options" rows="2" style="min-width:160px" placeholder="FUNCIONA|Funciona">${opts.replace(/</g,'')}</textarea>
+          <div class="small text-muted mt-1">Condición: mostrar si campo
+            <input class="form-control form-control-sm d-inline-block" style="width:100px" data-k="vw_field" value="${(f.visible_when&&f.visible_when.field)||''}" placeholder="ej. vandalismo">
+            es uno de
+            <input class="form-control form-control-sm d-inline-block" style="width:140px" data-k="vw_in" value="${(f.visible_when&&f.visible_when.in)?f.visible_when.in.join(','):''}" placeholder="A,B">
+          </div>`;
+    }
+
+    tr.innerHTML = `
+      <td><input class="form-control form-control-sm" data-k="label" value="${(f.label||'').replace(/"/g,'&quot;')}"></td>
+      <td><input class="form-control form-control-sm" data-k="key" value="${(f.key||'').replace(/"/g,'&quot;')}" style="min-width:110px" ${isMatrix?'readonly title="La matriz usa las claves de cada fila"':''}></td>
+      <td><select class="form-select form-select-sm" data-k="type">${typeOpts}</select></td>
+      <td class="text-center"><input type="checkbox" class="form-check-input" data-k="required" ${f.required?'checked':''}></td>
+      <td>${extra}</td>
+      <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="editorRemoveField(${si},${fi})">✕</button></td>`;
+
+    tr.querySelectorAll('[data-k]').forEach(el => {
+        el.addEventListener('change', () => {
+            if (el.getAttribute('data-k') === 'type') {
+                editorSyncField(si, fi, tr);
+                // re-render row UI when type switches to/from matrix
+                const parent = tr.parentNode;
+                const next = editorFieldRow(si, fi, EDITOR_STATE.definicion.sections[si].fields[fi]);
+                parent.replaceChild(next, tr);
+            } else {
+                editorSyncField(si, fi, tr);
+            }
+        });
+        el.addEventListener('blur', () => editorSyncField(si, fi, tr));
+    });
+    return tr;
+}
+
+function editorParseLines(raw) {
+    return (raw || '').split('\n').map(line => {
+        const p = line.split('|');
+        return { left: (p[0]||'').trim(), right: (p[1]||p[0]||'').trim() };
+    }).filter(o => o.left !== '' || o.right !== '');
+}
+
+
+function editorSyncField(si, fi, tr) {
+    const get = k => tr.querySelector('[data-k="'+k+'"]');
+    const f = Object.assign({}, EDITOR_STATE.definicion.sections[si].fields[fi] || {});
+    f.label = get('label') ? get('label').value : f.label;
+    f.key = get('key') ? get('key').value : f.key;
+    f.type = get('type') ? get('type').value : f.type;
+    f.required = get('required') ? get('required').checked : !!f.required;
+
+    if (f.type === 'single_choice') f.ui = 'button_group';
+
+    if (f.type === 'matrix') {
+        const rowsEl = get('matrix_rows');
+        const colsEl = get('matrix_cols');
+        if (rowsEl) {
+            f.rows = editorParseLines(rowsEl.value).map(o => ({ key: o.left, label: o.right || o.left }));
+        }
+        if (colsEl) {
+            const raw = colsEl.value || '';
+            if (/^\s*\[.+\]/m.test(raw)) {
+                const groups = [];
+                let currentGroup = null;
+                raw.split('\n').forEach(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return;
+                    const m = trimmed.match(/^\[(.*)\]$/);
+                    if (m) {
+                        currentGroup = { label: m[1].trim(), columns: [] };
+                        groups.push(currentGroup);
+                    } else {
+                        const parts = trimmed.split('|');
+                        const val = (parts[0] || '').trim();
+                        const lbl = (parts[1] || val).trim();
+                        if (val || lbl) {
+                            if (!currentGroup) {
+                                currentGroup = { label: '', columns: [] };
+                                groups.push(currentGroup);
+                            }
+                            currentGroup.columns.push({ value: val, label: lbl });
+                        }
+                    }
+                });
+                f.column_groups = groups;
+                delete f.columns;
+            } else {
+                f.columns = editorParseLines(raw).map(o => ({ value: o.left, label: o.right || o.left }));
+                delete f.column_groups;
+            }
+        }
+        // key de la matriz es contenedor; las respuestas usan keys de filas
+        if (!f.key) f.key = 'radio';
+        delete f.options;
+        delete f.visible_when;
+    } else {
+        const optEl = get('options');
+        if (optEl && (f.type === 'single_choice' || f.type === 'select')) {
+            f.options = editorParseLines(optEl.value).map(o => ({ value: o.left, label: o.right || o.left }));
+        }
+        const vf = get('vw_field') ? get('vw_field').value.trim() : '';
+        const vin = get('vw_in') ? get('vw_in').value.trim() : '';
+        if (vf && vin) {
+            f.visible_when = { field: vf, in: vin.split(',').map(s => s.trim()).filter(Boolean) };
+        } else {
+            delete f.visible_when;
+        }
+        delete f.rows;
+        delete f.columns;
+    }
+    EDITOR_STATE.definicion.sections[si].fields[fi] = f;
+}
+
+
+function editorAddSection() {
+    EDITOR_STATE.definicion.sections.push({
+        id: 'sec_' + Date.now(),
+        title: 'Nueva sección',
+        fields: []
+    });
+    editorRender();
+}
+
+function editorRemoveSection(si) {
+    if (!confirm('¿Eliminar esta sección y sus campos?')) return;
+    EDITOR_STATE.definicion.sections.splice(si, 1);
+    editorRender();
+}
+
+function editorAddField(si) {
+    EDITOR_STATE.definicion.sections[si].fields = EDITOR_STATE.definicion.sections[si].fields || [];
+    EDITOR_STATE.definicion.sections[si].fields.push({
+        key: 'campo_nuevo',
+        type: 'text',
+        label: 'Nuevo campo',
+        required: false
+    });
+    editorRender();
+}
+
+function editorRemoveField(si, fi) {
+    EDITOR_STATE.definicion.sections[si].fields.splice(fi, 1);
+    editorRender();
+}
+
+async function editorSave(asNewVersion) {
+    // sync all visible rows
+    document.querySelectorAll('#editorSections .editor-sec-title').forEach(inp => {
+        const si = +inp.dataset.si;
+        if (EDITOR_STATE.definicion.sections[si]) EDITOR_STATE.definicion.sections[si].title = inp.value;
+    });
+    document.querySelectorAll('#editorSections tbody tr').forEach((tr, idx) => {
+        // re-sync by walking sections - simpler: query data from rows with parent
+    });
+    // Force sync every field row
+    (EDITOR_STATE.definicion.sections || []).forEach((sec, si) => {
+        const tbody = document.getElementById('editorFields' + si);
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach((tr, fi) => editorSyncField(si, fi, tr));
+    });
+
+    showLoading();
+    try {
+        const r = await fetch('/api/formulario/editor/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify({
+                id: EDITOR_STATE.id,
+                nombre: document.getElementById('editorNombre').value,
+                definicion: EDITOR_STATE.definicion,
+                nueva_version: !!asNewVersion,
+                activar: document.getElementById('editorActiva').checked,
+            })
+        });
+        const j = await r.json();
+        hideLoading();
+        showToast(j.message || (j.status === 'success' ? 'Guardado' : 'Error'));
+        if (j.status === 'success') {
+            FORM_DEF = null; // forzar recarga en Atender
+            loadFormEditor();
+        }
+    } catch (e) {
+        hideLoading();
+        showToast('Error al guardar');
+    }
+}
+
+/* ========== MOTOR DE FORMULARIOS (plantilla JSON) ========== */
+let FORM_DEF = null;
+let FORM_PATIOS = [];
+let FORM_CTX = {};
+
+async function ensureFormTemplate() {
+    if (FORM_DEF) return FORM_DEF;
+    const r = await fetch('/api/formulario/activo/');
+    const j = await r.json();
+    if (j.status !== 'ok') throw new Error(j.message || 'Sin plantilla');
+    FORM_DEF = j.definicion;
+    FORM_PATIOS = j.patios || [];
+    FORM_CTX.tecnico_nombre = j.tecnico_nombre;
+    FORM_CTX.tecnico_codigo = j.tecnico_codigo;
+    const meta = document.getElementById('formEngineMeta');
+    if (meta) meta.textContent = (j.nombre || '') + ' · v' + (j.version || '') + ' · ' + (j.codigo || '');
+    return FORM_DEF;
+}
+
+function formEvalVisible(field) {
+    const rule = field.visible_when;
+    if (!rule) return true;
+    const el = document.querySelector('[name="' + rule.field + '"]:checked')
+        || document.querySelector('[name="' + rule.field + '"]');
+    let val = '';
+    if (el) val = el.type === 'radio' || el.type === 'checkbox' ? (document.querySelector('[name="'+rule.field+'"]:checked')||{}).value || '' : el.value;
+    if (rule.in) return rule.in.indexOf(val) >= 0;
+    if (rule.eq !== undefined) return val === rule.eq;
+    if (rule.neq !== undefined) return val !== rule.neq;
+    return true;
+}
+
+function formApplyConditionals() {
+    document.querySelectorAll('#formEngineRoot [data-field-key]').forEach(wrap => {
+        const key = wrap.getAttribute('data-field-key');
+        const field = formFindField(key);
+        if (!field) return;
+        wrap.style.display = formEvalVisible(field) ? '' : 'none';
+    });
+}
+
+function formFindField(key) {
+    if (!FORM_DEF || !FORM_DEF.sections) return null;
+    for (const sec of FORM_DEF.sections) {
+        for (const f of (sec.fields || [])) {
+            if (f.key === key) return f;
+            if (f.type === 'matrix' && f.rows) {
+                for (const row of f.rows) {
+                    if (row.key === key) return f;
+                }
+            }
+        }
+    }
+    return null;
+}
+
+function formRenderField(field) {
+    const req = field.required ? ' <span class="text-danger">*</span>' : '';
+    const ro = field.readonly ? 'readonly' : '';
+    let html = '<div class="mb-3" data-field-key="' + field.key + '">';
+    html += '<label class="form-label fw-semibold">' + (field.label || field.key) + req + '</label>';
+
+    if (field.type === 'single_choice' && field.ui === 'button_group') {
+        html += '<div class="d-flex flex-wrap gap-2">';
+        (field.options || []).forEach((opt, i) => {
+            const id = field.key + '_' + i;
+            const color = opt.color || 'primary';
+            html += '<input type="radio" class="btn-check" name="' + field.key + '" id="' + id + '" value="' + (opt.value||'') + '" ' + (field.required && i===0 ? '' : '') + '>';
+            html += '<label class="btn btn-outline-' + color + '" for="' + id + '">' + (opt.label||opt.value) + '</label>';
+        });
+        html += '</div>';
+    } else if (field.type === 'select') {
+        html += '<select class="form-select" name="' + field.key + '" id="field_' + field.key + '"' + (field.required ? ' required' : '') + '>';
+        let opts = field.options || [];
+        if (field.options_source === 'patios') {
+            opts = [{value:'', label:'Seleccione…'}].concat(FORM_PATIOS.map(n => ({value:n, label:n})));
+        }
+        opts.forEach(opt => {
+            html += '<option value="' + (opt.value||'') + '">' + (opt.label||opt.value) + '</option>';
+        });
+        html += '</select>';
+    } else if (field.type === 'textarea') {
+        html += '<textarea class="form-control" name="' + field.key + '" id="field_' + field.key + '" rows="' + (field.rows||3) + '" ' +
+            (field.required ? 'required ' : '') + 'placeholder="' + (field.placeholder||'') + '"></textarea>';
+    } else if (field.type === 'matrix') {
+        html += '<div class="table-responsive"><table class="table table-sm table-bordered text-center align-middle mb-0"><thead class="table-light">';
+        if (field.column_groups && field.column_groups.length) {
+            // Two-row header: group labels + sub-column labels
+            const groups = field.column_groups;
+            html += '<tr><th rowspan="2" class="align-middle bg-light text-start" style="width:25%;"></th>';
+            groups.forEach(g => {
+                const colCount = (g.columns || []).length || 1;
+                html += '<th class="small fw-bold py-1 bg-light" colspan="' + colCount + '">' + (g.label || '') + '</th>';
+            });
+            html += '</tr><tr>';
+            groups.forEach(g => {
+                (g.columns || []).forEach(c => {
+                    html += '<th class="small py-1 text-muted">' + (c.label || c.value) + '</th>';
+                });
+            });
+            html += '</tr></thead><tbody>';
+            (field.rows || []).forEach(row => {
+                html += '<tr data-field-key="' + row.key + '"><td class="text-start fw-semibold small bg-light">' + row.label + '</td>';
+                groups.forEach((g, gIdx) => {
+                    const grpKey = (g.label || ('g' + gIdx)).toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    const inputName = groups.length > 1 ? (row.key + '_' + grpKey) : row.key;
+                    (g.columns || []).forEach(c => {
+                        html += '<td><input type="radio" class="form-check-input" name="' + inputName + '" value="' + c.value + '"></td>';
+                    });
+                });
+                html += '</tr>';
+            });
+        } else {
+            // Flat columns (original behavior)
+            html += '<tr><th class="bg-light text-start" style="width:25%;"></th>';
+            (field.columns || []).forEach(c => { html += '<th class="small fw-bold py-1 bg-light">' + (c.label || c.value) + '</th>'; });
+            html += '</tr></thead><tbody>';
+            (field.rows || []).forEach(row => {
+                html += '<tr data-field-key="' + row.key + '"><td class="text-start fw-semibold small bg-light">' + row.label + '</td>';
+                (field.columns || []).forEach(c => {
+                    html += '<td><input type="radio" class="form-check-input" name="' + row.key + '" value="' + c.value + '"></td>';
+                });
+                html += '</tr>';
+            });
+        }
+        html += '</tbody></table></div>';
+    } else {
+        // text / number
+        html += '<input type="' + (field.type === 'number' ? 'number' : 'text') + '" class="form-control" name="' + field.key +
+            '" id="field_' + field.key + '" ' + ro + (field.required ? ' required' : '') + '>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function formRenderAll() {
+    if (!FORM_DEF) return;
+    const root = document.getElementById('formEngineRoot');
+    let html = '';
+    (FORM_DEF.sections || []).forEach(sec => {
+        html += '<div class="form-section mb-3 p-3 border rounded-3 bg-light" id="' + (sec.id||'') + '">';
+        html += '<h6 class="text-primary text-uppercase small fw-bold mb-3">' + (sec.title||'') + '</h6>';
+        (sec.fields || []).forEach(f => { html += formRenderField(f); });
+        html += '</div>';
+    });
+    root.innerHTML = html;
+    root.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('change', formApplyConditionals);
+    });
+    formApplyConditionals();
+}
+
+function formCollectData() {
+    const data = {};
+    document.querySelectorAll('#formEngineRoot [name]').forEach(el => {
+        const name = el.name;
+        if (el.type === 'radio') {
+            if (el.checked) data[name] = el.value;
+            else if (data[name] === undefined) data[name] = data[name] || '';
+        } else if (el.type === 'checkbox') {
+            if (el.checked) data[name] = el.value;
+        } else {
+            data[name] = el.value;
+        }
+    });
+    return data;
+}
+
+function formSetValue(name, value) {
+    if (value === undefined || value === null) return;
+    const radios = document.querySelectorAll('#formEngineRoot input[type=radio][name="' + name + '"]');
+    if (radios.length) {
+        radios.forEach(r => { r.checked = (r.value === String(value)); });
+        return;
+    }
+    const subRadios = document.querySelectorAll('#formEngineRoot input[type=radio][name^="' + name + '_"]');
+    if (subRadios.length) {
+        const parts = String(value).split('/');
+        const groupNames = Array.from(new Set(Array.from(subRadios).map(r => r.name)));
+        groupNames.forEach((gName, idx) => {
+            const targetVal = parts[idx] !== undefined ? parts[idx] : parts[0];
+            document.querySelectorAll('#formEngineRoot input[type=radio][name="' + gName + '"]').forEach(r => {
+                r.checked = (r.value === targetVal);
+            });
+        });
+        return;
+    }
+    const el = document.querySelector('#formEngineRoot [name="' + name + '"]');
+    if (el) el.value = value;
+}
+
+
+async function abrirBitacora(row, source) {
+    document.getElementById('formSource').value = source || '';
+    document.getElementById('formReportId').value = row.report_id || '';
+    document.getElementById('modalBusLabel').textContent = 'Bus ' + (row.bus_movil || '—');
+    try {
+        await ensureFormTemplate();
+        formRenderAll();
+        formSetValue('numero_bus', row.bus_movil || '');
+        formSetValue('tecnico_nombre', FORM_CTX.tecnico_nombre || '');
+        // Patio: match flexible
+        const patioRaw = (row.patio || '').replace(/^Patio\s+/i, '').trim();
+        formSetValue('patio', patioRaw);
+        const sel = document.querySelector('#formEngineRoot [name="patio"]');
+        if (sel && patioRaw) {
+            for (const opt of sel.options) {
+                if (opt.value && (opt.value.toLowerCase() === patioRaw.toLowerCase() ||
+                    patioRaw.toLowerCase().includes(opt.value.toLowerCase()) ||
+                    opt.value.toLowerCase().includes(patioRaw.toLowerCase()))) {
+                    sel.value = opt.value; break;
+                }
+            }
+        }
+        formSetValue('vandalismo', 'NINGUNO');
+        formApplyConditionals();
+        new bootstrap.Modal(document.getElementById('modalBitacora')).show();
+    } catch (e) {
+        showToast('No se pudo cargar el formulario: ' + (e.message || e));
+    }
+}
+
+async function enviarBitacora(e) {
+    e.preventDefault();
+    const collected = formCollectData();
+    const data = {
+        movil: collected.numero_bus || collected.movil,
+        numero_bus: collected.numero_bus,
+        tipo_revision: collected.tipo_revision || '',
+        patio: collected.patio || '',
+        tecnico: collected.tecnico_nombre || FORM_CTX.tecnico_nombre || '',
+        codigo_tecnico: FORM_CTX.tecnico_codigo || '',
+        source: document.getElementById('formSource').value,
+        reportId: document.getElementById('formReportId').value,
+        report_id: document.getElementById('formReportId').value,
+        gps: collected.gps || '',
+        vandalismo: collected.vandalismo || '',
+        simcard: collected.simcard || '',
+        adecuacion_electrica: collected.adecuacion_electrica || '',
+        radio_conexion: collected.radio_conexion || [collected.radio_conexion_simcard, collected.radio_conexion_instalacion].filter(Boolean).join('/') || '',
+        radio_instalacion: collected.radio_instalacion || [collected.radio_instalacion_simcard, collected.radio_instalacion_instalacion].filter(Boolean).join('/') || '',
+        radio_perilla: collected.radio_perilla || '',
+        radio_pedal: collected.radio_pedal || '',
+        radio_pantalla: collected.radio_pantalla || '',
+        ctap: collected.ctap || '',
+        informe_tecnico: collected.informe_tecnico || '',
+    };
+    if (!data.tipo_revision || !data.patio || !data.gps || !data.informe_tecnico) {
+        showToast('Complete los campos obligatorios (tipo, patio, GPS, informe)'); return;
+    }
+    showLoading();
+    try {
+        const r = await fetch('/api/bitacora/', {
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},
+            body: JSON.stringify(data)
+        });
+        const j = await r.json();
+        hideLoading();
+        showToast(j.message || 'Guardado');
+        if (j.status === 'success') {
+            bootstrap.Modal.getInstance(document.getElementById('modalBitacora')).hide();
+            if (j.contador !== undefined) {
+                const c = document.getElementById('contadorHoy');
+                if (c) c.textContent = j.contador;
+                const s = document.getElementById('statContador');
+                if (s) s.textContent = j.contador;
+            }
+            if (typeof loadBitacora === 'function') loadBitacora();
+            if (typeof loadReportes === 'function') loadReportes();
+            if (typeof loadHistorial === 'function') { /* listo al abrir */ }
+            try {
+                const cr = await fetch('/api/contador/');
+                const cj = await cr.json();
+                if (cj.contador !== undefined) {
+                    const c = document.getElementById('contadorHoy');
+                    if (c) c.textContent = cj.contador;
+                    const s = document.getElementById('statContador');
+                    if (s) s.textContent = cj.contador;
+                }
+            } catch (_) {}
+        }
+    } catch(err) { hideLoading(); showToast('Error al guardar'); }
+}
+
+async function loadResumen() {
+    showLoading();
+    const fecha = document.getElementById('filtroFecha')?.value || '';
+    try {
+        const r = await fetch('/api/resumen/' + (fecha ? '?fecha='+fecha : ''));
+        const j = await r.json();
+        if (typeof google !== 'undefined') {
+            google.charts.load('current', {packages:['corechart','bar']});
+            google.charts.setOnLoadCallback(() => {
+                drawBar('chart_tecnico','Atenciones por Técnico', j.atencionesPorTecnico);
+                drawBar('chart_patio','Atenciones por Patio', j.atencionesPorPatio);
+                drawPie('chart_tipo','Tipo de Revisión', j.tiposMantenimiento);
+                drawPie('chart_gps','Estado GPS', j.estadoGPS);
+            });
+        }
+    } catch(e) { showToast('Error resumen'); }
+    hideLoading();
+}
+function drawBar(id,title,data) {
+    if (!data||data.length<2){document.getElementById(id).innerHTML='<p class="text-center text-muted p-4">Sin datos</p>';return;}
+    new google.visualization.BarChart(document.getElementById(id)).draw(google.visualization.arrayToDataTable(data),{title,legend:{position:'none'},backgroundColor:'transparent'});
+}
+function drawPie(id,title,data) {
+    if (!data||data.length<2){document.getElementById(id).innerHTML='<p class="text-center text-muted p-4">Sin datos</p>';return;}
+    new google.visualization.PieChart(document.getElementById(id)).draw(google.visualization.arrayToDataTable(data),{title,pieHole:0.4,backgroundColor:'transparent'});
+}
+
+{% if is_admin %}
+// Flota
+async function loadFlota() {
+    const q = document.getElementById('flotaQ')?.value||'';
+    const est = document.getElementById('flotaEstado')?.value||'';
+    const r = await fetch(`/api/flota/?q=${encodeURIComponent(q)}&estado=${est}`);
+    const j = await r.json();
+    const allData = j.data || [];
+    const ps = +(document.getElementById('flotaPageSize')?.value || 100);
+    function renderFlotaRow(b) {
+        const badge = {ACTIVO:'success',BAJA:'danger',MANTENIMIENTO:'warning',RESERVA:'info'}[b.estado_operativo]||'secondary';
+        const genBadge = (b.estado_genesis||'').toLowerCase().includes('inop') ? 'danger' : (b.estado_genesis ? 'success' : 'secondary');
+        return `<td><strong>${b.bus_movil}</strong></td><td>${b.placa||''}</td>
+            <td><span class="badge bg-${badge}">${b.estado_operativo}</span></td>
+            <td class="small">${b.patio_base||b.coe||'—'}</td>
+            <td><span class="badge bg-${genBadge}">${b.estado_genesis||'—'}</span></td>
+            <td class="small">${b.estado_sistema||'—'}</td>
+            <td class="small">${b.estado_busae||'—'}</td>
+            <td class="small">${b.estado_fw||'—'}</td>
+            <td class="small">${b.estado_bocina||'—'}</td>
+            <td class="small">${(b.adecuacion_electrica||'').substring(0,18)}</td>
+            <td class="text-nowrap">
+                <button class="btn btn-sm btn-outline-secondary" onclick="flotaAccion('${b.bus_movil}','mover')" title="Mover patio">↔</button>
+                <button class="btn btn-sm btn-outline-info" onclick="flotaAccion('${b.bus_movil}','asignar_tecnico')" title="Asignar técnico">👤</button>
+                <button class="btn btn-sm btn-outline-warning" onclick="flotaAccion('${b.bus_movil}','estado')" title="Estado">⚙</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="flotaAccion('${b.bus_movil}','baja')" title="Baja">✕</button>
+            </td>`;
+    }
+    paginate('flota', allData, 1, ps, renderFlotaRow, '#tablaFlota tbody', 'flotaPagNav', 'flotaTotal');
+}
+function showFlotaAlta() { new bootstrap.Modal(document.getElementById('modalFlota')).show(); }
+async function submitFlotaAlta(e) {
+    e.preventDefault();
+    const data = {accion:'alta', bus_movil:document.getElementById('flotaBus').value, placa:document.getElementById('flotaPlaca').value,
+        marca_modelo:document.getElementById('flotaModelo').value, anio:document.getElementById('flotaAnio').value, patio_base:document.getElementById('flotaPatio').value};
+    const r = await fetch('/api/flota/accion/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify(data)});
+    const j = await r.json(); showToast(j.message); if(j.status==='success'){bootstrap.Modal.getInstance(document.getElementById('modalFlota')).hide();loadFlota();}
+}
+async function flotaAccion(bus, accion) {
+    let body = {accion, bus_movil: bus};
+    if (accion==='baja') { const m=prompt('Motivo de baja:'); if(!m)return; body.motivo=m; }
+    if (accion==='mover') { const p=prompt('Código patio destino:'); if(!p)return; body.patio_base=p; }
+    if (accion==='estado') { const e=prompt('Nuevo estado (ACTIVO/MANTENIMIENTO/RESERVA):'); if(!e)return; body.estado_operativo=e.toUpperCase(); }
+    if (accion==='asignar_tecnico') { const t=prompt('Nombre del técnico (vacío para quitar):'); if(t===null)return; body.tecnico=t; }
+    const r = await fetch('/api/flota/accion/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify(body)});
+    const j = await r.json(); showToast(j.message); if(j.status==='success') loadFlota();
+}
+async function importFlota(input) {
+    if (!input.files[0]) return;
+    const fd = new FormData(); fd.append('file', input.files[0]);
+    showLoading();
+    const r = await fetch('/api/flota/import/',{method:'POST',headers:{'X-CSRFToken':csrftoken},body:fd});
+    const j = await r.json(); hideLoading(); showToast(j.message); if(j.status==='success') loadFlota();
+    input.value='';
+}
+
+// GPS
+async function loadGPS() {
+    const est = document.getElementById('gpsEstado')?.value||'';
+    const q = document.getElementById('gpsQ')?.value||'';
+    const r = await fetch(`/api/gps/?estado=${est}&q=${encodeURIComponent(q)}`); const j = await r.json();
+    const allData = j.data || [];
+    const ps = +(document.getElementById('gpsPageSize')?.value || 100);
+    const gpsStateBadge = {INSTALADO:'success',BODEGA:'secondary',REPARACION:'warning',BAJA:'danger',PERDIDO:'dark'};
+    function renderGpsRow(d) {
+        const bc = gpsStateBadge[d.estado] || 'secondary';
+        const asignaBtn = !d.bus_asignado
+            ? `<button class="btn btn-sm btn-outline-primary" onclick="gpsAsignar('${d.imei}')">Asignar</button>`
+            : `<button class="btn btn-sm btn-outline-secondary" onclick="gpsDesasignar('${d.imei}')">Desasignar</button>`;
+        return `<td><code class="small">${d.imei}</code></td><td class="small">${d.modelo||''}</td>
+            <td><span class="badge bg-${bc}">${d.estado}</span></td>
+            <td>${d.bus_asignado||'—'}</td><td class="small">${d.telefono_sim||''}</td>
+            <td class="text-nowrap">${asignaBtn}
+                <button class="btn btn-sm btn-outline-danger" onclick="gpsBaja('${d.imei}')">Baja</button>
+            </td>`;
+    }
+    paginate('gps', allData, 1, ps, renderGpsRow, '#tablaGPS tbody', 'gpsPagNav', 'gpsTotal');
+}
+function showGPSAlta() { new bootstrap.Modal(document.getElementById('modalGPS')).show(); }
+async function submitGPSAlta(e) {
+    e.preventDefault();
+    const data = {accion:'alta', imei:document.getElementById('gpsImei').value, modelo:document.getElementById('gpsModelo').value,
+        serie:document.getElementById('gpsSerie').value, telefono_sim:document.getElementById('gpsTel').value};
+    const r = await fetch('/api/gps/accion/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify(data)});
+    const j = await r.json(); showToast(j.message); if(j.status==='success'){bootstrap.Modal.getInstance(document.getElementById('modalGPS')).hide();loadGPS();}
+}
+async function gpsAsignar(imei) { const bus=prompt('Número de bus:'); if(!bus)return;
+    const r=await fetch('/api/gps/accion/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify({accion:'asignar',imei,bus_movil:bus})});
+    const j=await r.json(); showToast(j.message); if(j.status==='success')loadGPS();
+}
+async function gpsDesasignar(imei) {
+    const r=await fetch('/api/gps/accion/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify({accion:'desasignar',imei})});
+    const j=await r.json(); showToast(j.message); if(j.status==='success')loadGPS();
+}
+async function gpsBaja(imei) { if(!confirm('¿Dar de baja GPS '+imei+'?'))return;
+    const r=await fetch('/api/gps/accion/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrftoken},body:JSON.stringify({accion:'baja',imei})});
+    const j=await r.json(); showToast(j.message); if(j.status==='success')loadGPS();
+}
+async function importGPS(input) {
+    if (!input.files[0]) return;
+    const fd = new FormData(); fd.append('file', input.files[0]);
+    showLoading();
+    const r = await fetch('/api/gps/import/',{method:'POST',headers:{'X-CSRFToken':csrftoken},body:fd});
+    const j = await r.json(); hideLoading(); showToast(j.message); if(j.status==='success') loadGPS();
+    input.value='';
+}
+
+// Genesis & BUSAE Poller
+async function importGenesis() {
+    const input = document.getElementById('genesisCSV');
+    if (!input.files[0]) { showToast('Seleccione un archivo CSV'); return; }
+    const fd = new FormData(); fd.append('file', input.files[0]);
+    showLoading();
+    try {
+        const r = await fetch('/api/genesis/import/',{method:'POST',headers:{'X-CSRFToken':csrftoken},body:fd});
+        const j = await r.json(); hideLoading();
+        document.getElementById('genesisResult').innerHTML = `<div class="alert alert-${j.status==='success'?'success':'danger'}">${j.message}</div>`;
+        showToast(j.message);
+        input.value = '';
+        loadPollerHealth();
+    } catch (e) {
+        hideLoading();
+        showToast('Error al importar Genesis');
+    }
+}
+
+async function importBusae() {
+    const input = document.getElementById('busaeCSV');
+    if (!input.files[0]) { showToast('Seleccione un archivo CSV de BUSAE'); return; }
+    const fd = new FormData(); fd.append('file', input.files[0]);
+    showLoading();
+    try {
+        const r = await fetch('/api/busae/import/', {method:'POST', headers:{'X-CSRFToken':csrftoken}, body:fd});
+        const j = await r.json();
+        hideLoading();
+        document.getElementById('busaeResult').innerHTML = `<div class="alert alert-${j.status==='success'?'success':'danger'}">${j.message}</div>`;
+        showToast(j.message);
+        input.value = '';
+        loadPollerHealth();
+    } catch (e) {
+        hideLoading();
+        showToast('Error al importar BUSAE');
+    }
+}
+
+async function loadPollerHealth() {
+    try {
+        const r = await fetch('/api/poller/health/');
+        const j = await r.json();
+        if (j.status === 'ok') {
+            // ── BUSAE ──
+            const b = j.busae || {};
+            const bBadge = document.getElementById('busaeHealthBadge');
+            if (bBadge) {
+                const bOk = b.estado === 'OK';
+                const bErr = b.estado === 'ERROR';
+                bBadge.className = 'badge bg-' + (bOk ? 'success' : (bErr ? 'danger' : 'secondary'));
+                bBadge.textContent = bOk ? 'OK' : (bErr ? 'ERROR' : (b.estado || 'PENDIENTE'));
+            }
+            if (document.getElementById('busaeHealthLast')) document.getElementById('busaeHealthLast').textContent = b.ultimo_exito || 'Sin registros';
+            if (document.getElementById('busaeHealthAgo')) document.getElementById('busaeHealthAgo').textContent = b.hace_minutos !== null ? (b.hace_minutos === 0 ? 'Hace un momento' : `Hace ${b.hace_minutos} min`) : '—';
+            if (document.getElementById('busaeHealthTotal')) document.getElementById('busaeHealthTotal').textContent = b.total_registros || '0';
+            const bErrEl = document.getElementById('busaeHealthError');
+            if (bErrEl) {
+                if (b.ultimo_error && b.estado === 'ERROR') {
+                    bErrEl.innerHTML = `<span class="text-danger small"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> ${b.ultimo_error}</span>`;
+                } else if (b.estado === 'OK' && b.errores_consecutivos > 0) {
+                    bErrEl.innerHTML = `<span class="text-warning small"><i class="bi bi-info-circle"></i> Ciclos con error previos: ${b.errores_consecutivos}</span>`;
+                } else {
+                    bErrEl.innerHTML = '';
+                }
+            }
+
+            // ── Genesis ──
+            const g = j.genesis || {};
+            const gBadge = document.getElementById('genesisHealthBadge');
+            if (gBadge) {
+                const gOk = g.estado === 'OK';
+                const errMsg = (g.ultimo_error || '').toLowerCase();
+                const isVpn = errMsg.includes('vpn') || errMsg.includes('sin conexion') || errMsg.includes('dns') || errMsg.includes('resolve');
+                if (gOk) {
+                    gBadge.className = 'badge bg-success';
+                    gBadge.textContent = 'OK';
+                } else if (isVpn) {
+                    gBadge.className = 'badge bg-warning text-dark';
+                    gBadge.textContent = 'SIN VPN';
+                } else {
+                    gBadge.className = 'badge bg-danger';
+                    gBadge.textContent = 'ERROR';
+                }
+            }
+            if (document.getElementById('genesisHealthLast')) document.getElementById('genesisHealthLast').textContent = g.ultimo_exito || 'Sin registros';
+            if (document.getElementById('genesisHealthAgo')) document.getElementById('genesisHealthAgo').textContent = g.hace_minutos !== null ? (g.hace_minutos === 0 ? 'Hace un momento' : `Hace ${g.hace_minutos} min`) : '—';
+            if (document.getElementById('genesisHealthTotal')) document.getElementById('genesisHealthTotal').textContent = g.total_registros || '0';
+            const gErrEl = document.getElementById('genesisHealthError');
+            if (gErrEl) {
+                const gErrMsg = g.ultimo_error || '';
+                const gIsVpn = gErrMsg.toLowerCase().includes('vpn') || gErrMsg.toLowerCase().includes('sin conexion');
+                if (gErrMsg) {
+                    const icon = gIsVpn ? 'bi-wifi-off' : 'bi-exclamation-triangle';
+                    const cls  = gIsVpn ? 'text-warning' : 'text-danger';
+                    gErrEl.innerHTML = `<span class="${cls} small"><i class="bi ${icon}"></i> ${gErrMsg}</span>`;
+                } else {
+                    gErrEl.innerHTML = '';
+                }
+            }
+            loadGenesisTable();
+        }
+    } catch (e) {
+        console.error('Error cargando salud del poller:', e);
+    }
+}
+
+async function loadGenesisTable() {
+    const q = document.getElementById('genesisQ')?.value || '';
+    try {
+        const r = await fetch(`/api/flota/?q=${encodeURIComponent(q)}`);
+        const j = await r.json();
+        const allData = j.data || [];
+        const ps = +(document.getElementById('genesisPageSize')?.value || 50);
+
+        function renderGenesisRow(b) {
+            const genBadge = (b.estado_genesis||'').toLowerCase().includes('inop') ? 'danger' : (b.estado_genesis ? 'success' : 'secondary');
+            const baeBadge = (b.estado_busae === 'Active') ? 'success' : ((b.estado_busae === 'NO GPS') ? 'danger' : 'info');
+            return `
+                <td><strong>${b.bus_movil}</strong></td>
+                <td>${b.placa || '—'}</td>
+                <td class="small">${b.patio_actual || b.patio_base || b.coe || '—'}</td>
+                <td><span class="badge bg-${genBadge}">${b.estado_genesis || '—'}</span></td>
+                <td><span class="badge bg-${baeBadge}">${b.estado_busae || '—'}</span></td>
+                <td class="small">${b.sistema_instalado || b.estado_sistema || '—'}</td>
+                <td class="small text-muted">${b.estado_fw || '—'}</td>
+                <td class="small">${b.estado_bocina || '—'}</td>
+            `;
+        }
+
+        paginate('genesis', allData, 1, ps, renderGenesisRow, '#tablaGenesisSync tbody', 'genesisPagNav', 'genesisTotal');
+    } catch (e) {
+        console.error('Error cargando tabla genesis sync:', e);
+    }
+}
+
+function changeGenesisPage(p) {
+    const ps = +(document.getElementById('genesisPageSize')?.value || 50);
+    if (_pag['genesis']) {
+        _pag['genesis'].pageSize = ps;
+        _goPage('genesis', p || _pag['genesis'].page);
+    }
+}
+
+async function syncPollerNow(service) {
+    showLoading();
+    try {
+        const fd = new FormData();
+        fd.append('service', service || 'all');
+        const r = await fetch('/api/poller/sync/', {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken},
+            body: fd
+        });
+        const j = await r.json();
+        hideLoading();
+        if (j.status === 'success') {
+            const g = j.data?.genesis || {};
+            const b = j.data?.busae || {};
+            if (g.status === 'ok' && b.status === 'ok') {
+                showToast(`Sincronización exitosa (${g.saved || 0} Genesis, ${b.saved || 0} BUSAE)`);
+            } else if (g.status === 'ok') {
+                showToast(`Genesis sincronizado (${g.saved || 0} buses). BUSAE sin credenciales.`);
+            } else if (b.status === 'ok') {
+                showToast(`BUSAE sincronizado (${b.saved || 0} buses). Genesis sin conexión.`);
+            } else {
+                showToast('Ciclo finalizado: Sin conexión a Genesis (requiere VPN) ni credenciales BUSAE.');
+            }
+        } else {
+            showToast(j.message || 'Aviso en sincronización');
+        }
+        loadPollerHealth();
+    } catch (e) {
+        hideLoading();
+        showToast('Error de comunicación con el servidor');
+    }
+}
+
+// Auditoría
+async function loadAuditoria() {
+    const accion = document.getElementById('audAccion')?.value||'';
+    const desde = document.getElementById('audDesde')?.value||'';
+    const r = await fetch(`/api/auditoria/?accion=${accion}&desde=${desde}`);
+    const j = await r.json();
+    const allData = j.data || [];
+    const ps = +(document.getElementById('audPageSize')?.value || 50);
+    const audActionColor = {LOGIN:'primary',LOGIN_FAIL:'danger',CREATE:'success',UPDATE:'warning',DELETE:'danger',ATENDER:'info',IMPORT:'secondary'};
+    function renderAudRow(a) {
+        const bc = audActionColor[a.accion] || 'dark';
+        return `<td class="small text-nowrap">${a.timestamp.replace('T',' ').substring(0,19)}</td>
+            <td class="small">${a.usuario_codigo} <span class="text-muted">${a.usuario_nombre}</span></td>
+            <td><span class="badge bg-${bc}">${a.accion}</span></td>
+            <td class="small">${a.modelo||''}</td><td class="small">${a.objeto_id||''}</td>
+            <td class="small">${(a.descripcion||'').substring(0,60)}</td><td class="small text-muted">${a.ip||''}</td>`;
+    }
+    paginate('aud', allData, 1, ps, renderAudRow, '#tablaAuditoria tbody', 'audPagNav', 'audTotal');
+}
+
+// Usuarios
+let editMode = false;
+let _usuariosCache = [];
+
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isPass = input.type === 'password';
+    input.type = isPass ? 'text' : 'password';
+    const icon = btn ? btn.querySelector('i') : null;
+    if (icon) {
+        icon.className = isPass ? 'bi bi-eye-slash' : 'bi bi-eye';
+    }
+}
+
+async function loadUsuarios() {
+    try {
+        const r = await fetch('/api/usuarios/');
+        const j = await r.json();
+        const tbody = document.querySelector('#tablaUsuarios tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        _usuariosCache = j.data || [];
+        if (!_usuariosCache.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Sin usuarios registrados</td></tr>';
+            return;
+        }
+        _usuariosCache.forEach(u => {
+            const rolBadge = u.is_admin ? 'bg-danger' : (u.is_supervisor ? 'bg-warning text-dark' : 'bg-secondary');
+            const rolLabel = u.rol || (u.is_admin ? 'ADMIN' : 'TECNICO');
+            const estadoBadge = u.esta_bloqueado
+                ? '<span class="badge bg-danger ms-1" title="Cuenta bloqueada por reintentos"><i class="bi bi-lock-fill"></i> Bloqueado</span>'
+                : '';
+            tbody.insertRow().innerHTML = `
+                <td class="fw-semibold">${u.codigo}</td>
+                <td>${u.nombre} ${estadoBadge}</td>
+                <td>${u.patio_asignado || '—'}</td>
+                <td>${u.cuota_diaria || 0}</td>
+                <td><span class="badge ${rolBadge}">${rolLabel}</span></td>
+                <td class="text-nowrap text-end">
+                    <button class="btn btn-sm btn-outline-warning me-1" title="Restablecer contraseña" onclick="openResetPasswordModal('${u.codigo}')">
+                        <i class="bi bi-key-fill"></i> <span class="d-none d-md-inline">Restablecer</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary me-1" title="Editar usuario" onclick="editUsuario('${u.codigo}')">
+                        <i class="bi bi-pencil-fill"></i> <span class="d-none d-md-inline">Editar</span>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" title="Eliminar usuario" onclick="delUsuario('${u.codigo}')">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </td>`;
+        });
+    } catch (err) {
+        console.error('Error cargando usuarios:', err);
+    }
+}
+
+function editUsuario(codigo) {
+    const u = (_usuariosCache || []).find(x => String(x.codigo) === String(codigo));
+    showUsuarioForm(u);
+}
+
+function showUsuarioForm(u) {
+    editMode = !!u;
+    document.getElementById('modalUsuarioTitle').innerHTML = u
+        ? `<i class="bi bi-pencil-square me-2"></i>Editar Usuario: ${u.nombre}`
+        : `<i class="bi bi-person-plus-fill me-2"></i>Agregar Nuevo Usuario`;
+    
+    document.getElementById('usrCodigo').value = u ? u.codigo : '';
+    document.getElementById('usrCodigo').disabled = !!u;
+    document.getElementById('usrNombre').value = u ? u.nombre : '';
+    document.getElementById('usrCuota').value = u ? (u.cuota_diaria || 0) : 0;
+    
+    // Rol
+    const rolVal = u ? (u.rol || (u.is_admin ? 'ADMIN' : (u.is_supervisor ? 'SUPERVISOR' : 'TECNICO'))) : 'TECNICO';
+    const selRol = document.getElementById('usrRol');
+    if (selRol) selRol.value = rolVal;
+    
+    // Patio
+    const selPatio = document.getElementById('usrPatio');
+    if (selPatio) selPatio.value = u && u.patio_id ? u.patio_id : '';
+    
+    // Email
+    const inpEmail = document.getElementById('usrEmail');
+    if (inpEmail) inpEmail.value = u && u.email ? u.email : '';
+
+    // Password
+    const pwdInput = document.getElementById('usrPassword');
+    const pwdHelp = document.getElementById('usrPasswordHelp');
+    const pwdHint = document.getElementById('usrPasswordLabelHint');
+    if (pwdInput) {
+        pwdInput.value = '';
+        pwdInput.type = 'password';
+        if (editMode) {
+            pwdInput.required = false;
+            pwdInput.placeholder = 'Dejar en blanco para mantener la actual';
+            if (pwdHint) pwdHint.textContent = '(Opcional)';
+            if (pwdHelp) pwdHelp.textContent = 'Si ingresa una nueva contraseña aquí, se actualizará.';
+        } else {
+            pwdInput.required = true;
+            pwdInput.placeholder = 'Contraseña de acceso inicial (mín. 4 caract.)';
+            if (pwdHint) pwdHint.textContent = '(Obligatorio)';
+            if (pwdHelp) pwdHelp.textContent = 'El usuario utilizará esta contraseña para ingresar al sistema.';
+        }
+    }
+    
+    new bootstrap.Modal(document.getElementById('modalUsuario')).show();
+}
+
+async function submitUsuario(e) {
+    e.preventDefault();
+    const codigo = document.getElementById('usrCodigo').value.trim();
+    const nombre = document.getElementById('usrNombre').value.trim();
+    const cuota = document.getElementById('usrCuota').value;
+    const rol = document.getElementById('usrRol') ? document.getElementById('usrRol').value : 'TECNICO';
+    const patio_id = document.getElementById('usrPatio') ? document.getElementById('usrPatio').value : '';
+    const email = document.getElementById('usrEmail') ? document.getElementById('usrEmail').value.trim() : '';
+    const password = document.getElementById('usrPassword') ? document.getElementById('usrPassword').value.trim() : '';
+
+    if (!codigo || !nombre) {
+        showToast('Código y nombre son obligatorios');
+        return;
+    }
+    if (!editMode && !password) {
+        showToast('Debe ingresar una contraseña para el nuevo usuario');
+        return;
+    }
+
+    const data = {
+        codigo,
+        nombre,
+        cuota,
+        rol,
+        is_admin: rol === 'ADMIN',
+        patio_id,
+        email,
+        password
+    };
+
+    try {
+        const url = editMode ? '/api/usuarios/editar/' : '/api/usuarios/crear/';
+        const r = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify(data)
+        });
+        const j = await r.json();
+        showToast(j.message);
+        if (j.status === 'success') {
+            const modalEl = document.getElementById('modalUsuario');
+            const modalInst = bootstrap.Modal.getInstance(modalEl);
+            if (modalInst) modalInst.hide();
+            loadUsuarios();
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error al guardar usuario');
+    }
+}
+
+function openResetPasswordModal(codigo) {
+    const u = (_usuariosCache || []).find(x => String(x.codigo) === String(codigo));
+    if (!u) return;
+    document.getElementById('resetPwdCodigo').value = u.codigo;
+    document.getElementById('resetPwdUsuarioNombre').textContent = u.nombre;
+    document.getElementById('resetPwdUsuarioCodigo').textContent = `Código: ${u.codigo} | Rol: ${u.rol || (u.is_admin ? 'ADMIN' : 'TECNICO')}`;
+    const inp = document.getElementById('resetPwdInput');
+    inp.value = '';
+    inp.type = 'password';
+    new bootstrap.Modal(document.getElementById('modalResetPassword')).show();
+}
+
+async function submitResetPassword(e) {
+    e.preventDefault();
+    const codigo = document.getElementById('resetPwdCodigo').value.trim();
+    const password = document.getElementById('resetPwdInput').value.trim();
+    if (!codigo || !password) {
+        showToast('Ingrese la nueva contraseña');
+        return;
+    }
+    if (password.length < 4) {
+        showToast('La contraseña debe tener al menos 4 caracteres');
+        return;
+    }
+    try {
+        const r = await fetch('/api/usuarios/reset-password/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify({ codigo, password })
+        });
+        const j = await r.json();
+        showToast(j.message);
+        if (j.status === 'success') {
+            const modalEl = document.getElementById('modalResetPassword');
+            const modalInst = bootstrap.Modal.getInstance(modalEl);
+            if (modalInst) modalInst.hide();
+            loadUsuarios();
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error de conexión al restablecer contraseña');
+    }
+}
+
+async function delUsuario(codigo) {
+    if (!confirm('¿Eliminar usuario ' + codigo + '?')) return;
+    try {
+        const r = await fetch('/api/usuarios/eliminar/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify({ codigo })
+        });
+        const j = await r.json();
+        showToast(j.message);
+        if (j.status === 'success') loadUsuarios();
+    } catch (err) {
+        console.error(err);
+        showToast('Error al eliminar usuario');
+    }
+}
+{% endif %}
+
+loadBitacora();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 5 — Configuración del Sistema
+// ═══════════════════════════════════════════════════════════════════════════
+let _cfgData = {}; // caché local
+
+async function loadConfig() {
+    try {
+        const r = await fetch('/api/config/');
+        if (!r.ok) { showToast('Error al cargar configuración'); return; }
+        const j = await r.json();
+        _cfgData = j.config || {};
+        _fillConfigForm(_cfgData);
+        loadPatios(); // carga la tabla de patios también
+    } catch(e) { showToast('Error al cargar configuración'); }
+}
+
+function _fillConfigForm(cfg) {
+    const v = (key, sub) => {
+        const entry = cfg[key];
+        if (!entry || entry.valor === null || entry.valor === undefined) return undefined;
+        return sub ? entry.valor[sub] : entry.valor;
+    };
+    // General
+    const appNom = v('app_nombre', 'nombre');
+    if (appNom !== undefined) document.getElementById('cfg_app_nombre').value = appNom;
+    // Turno
+    const turnoH = v('turno_corte_hora', 'hora');
+    if (turnoH !== undefined) document.getElementById('cfg_turno_hora').value = turnoH;
+    const pollInt = v('poller_intervalo_minutos', 'minutos');
+    if (pollInt !== undefined) document.getElementById('cfg_poller_intervalo').value = pollInt;
+    const busaeAct = v('poller_busae_activo', 'activo');
+    if (busaeAct !== undefined) document.getElementById('cfg_poller_busae').checked = !!busaeAct;
+    const genAct = v('poller_genesis_activo', 'activo');
+    if (genAct !== undefined) document.getElementById('cfg_poller_genesis').checked = !!genAct;
+    // Bitácora
+    const cuota = v('bitacora_cuota_default', 'cuota');
+    if (cuota !== undefined) document.getElementById('cfg_bitacora_cuota').value = cuota;
+    const soloPatio = v('bitacora_solo_mi_patio', 'activo');
+    if (soloPatio !== undefined) document.getElementById('cfg_solo_mi_patio').checked = !!soloPatio;
+    // Seguridad
+    const loginMax = v('login_max_intentos', 'max');
+    if (loginMax !== undefined) document.getElementById('cfg_login_max').value = loginMax;
+    const loginBlq = v('login_max_intentos', 'bloqueo_minutos');
+    if (loginBlq !== undefined) document.getElementById('cfg_login_bloqueo').value = loginBlq;
+    const sesH = v('sesion_horas', 'horas');
+    if (sesH !== undefined) document.getElementById('cfg_sesion_horas').value = sesH;
+    // Flags
+    const ffTk = v('ff_tickets', 'activo');
+    if (ffTk !== undefined) document.getElementById('cfg_ff_tickets').checked = !!ffTk;
+    const ffBo = v('ff_borradores', 'activo');
+    if (ffBo !== undefined) document.getElementById('cfg_ff_borradores').checked = !!ffBo;
+    const ffEx = v('ff_exportar_excel', 'activo');
+    if (ffEx !== undefined) document.getElementById('cfg_ff_excel').checked = !!ffEx;
+}
+
+async function cfgSave(grupo) {
+    const payload = {};
+    if (grupo === 'general') {
+        payload['app_nombre'] = {nombre: document.getElementById('cfg_app_nombre').value.trim() || 'Bitácora E.E'};
+    } else if (grupo === 'turno') {
+        payload['turno_corte_hora'] = {hora: parseInt(document.getElementById('cfg_turno_hora').value) || 8};
+        payload['poller_intervalo_minutos'] = {minutos: parseInt(document.getElementById('cfg_poller_intervalo').value) || 5};
+        payload['poller_busae_activo'] = {activo: document.getElementById('cfg_poller_busae').checked};
+        payload['poller_genesis_activo'] = {activo: document.getElementById('cfg_poller_genesis').checked};
+    } else if (grupo === 'bitacora') {
+        payload['bitacora_cuota_default'] = {cuota: parseInt(document.getElementById('cfg_bitacora_cuota').value) || 0};
+        payload['bitacora_solo_mi_patio'] = {activo: document.getElementById('cfg_solo_mi_patio').checked};
+    } else if (grupo === 'seguridad') {
+        payload['login_max_intentos'] = {
+            max: parseInt(document.getElementById('cfg_login_max').value) || 5,
+            bloqueo_minutos: parseInt(document.getElementById('cfg_login_bloqueo').value) || 15
+        };
+        payload['sesion_horas'] = {horas: parseInt(document.getElementById('cfg_sesion_horas').value) || 8};
+    } else if (grupo === 'flags') {
+        payload['ff_tickets']       = {activo: document.getElementById('cfg_ff_tickets').checked};
+        payload['ff_borradores']    = {activo: document.getElementById('cfg_ff_borradores').checked};
+        payload['ff_exportar_excel']= {activo: document.getElementById('cfg_ff_excel').checked};
+    }
+
+    const msgEl = document.getElementById(`cfg-${grupo}-msg`);
+    if (msgEl) msgEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando…';
+    try {
+        const r = await fetch('/api/config/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify(payload)
+        });
+        const j = await r.json();
+        if (j.status === 'ok') {
+            if (msgEl) msgEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Guardado</span>';
+            showToast('Configuración guardada correctamente');
+            setTimeout(() => { if (msgEl) msgEl.innerHTML = ''; }, 3000);
+        } else {
+            if (msgEl) msgEl.innerHTML = `<span class="text-danger">${j.message || 'Error'}</span>`;
+        }
+    } catch(e) {
+        if (msgEl) msgEl.innerHTML = '<span class="text-danger">Error de red</span>';
+    }
+}
+
+// ── PATIOS CRUD ──
+async function loadPatios() {
+    const tbody = document.getElementById('tbodyPatios');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>';
+    try {
+        const r = await fetch('/api/patios/');
+        const j = await r.json();
+        if (!j.patios || j.patios.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay patios registrados</td></tr>';
+            return;
+        }
+        tbody.innerHTML = j.patios.map((p, i) => `
+            <tr>
+                <td>${i+1}</td>
+                <td><code>${p.codigo}</code></td>
+                <td>${p.nombre}</td>
+                <td>${p.coe || '—'}</td>
+                <td>${p.orden}</td>
+                <td><span class="badge ${p.activo ? 'bg-success' : 'bg-secondary'}">${p.activo ? 'Activo' : 'Inactivo'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick='patioModalAbrir(${JSON.stringify(p)})'>
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="patioEliminar(${p.id}, '${p.codigo}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar patios</td></tr>';
+    }
+}
+
+function patioModalAbrir(patio) {
+    const isNew = !patio;
+    document.getElementById('modalPatioTitle').textContent = isNew ? 'Nuevo patio' : 'Editar patio';
+    document.getElementById('patioPk').value      = patio ? patio.id : '';
+    document.getElementById('patioCodigo').value  = patio ? patio.codigo : '';
+    document.getElementById('patioCodigo').readOnly = !isNew;
+    document.getElementById('patioCodigo').classList.toggle('bg-light', !isNew);
+    document.getElementById('patioNombre').value  = patio ? patio.nombre : '';
+    document.getElementById('patioCoe').value     = patio ? (patio.coe || '') : '';
+    document.getElementById('patioOrden').value   = patio ? patio.orden : 99;
+    const activoWrap = document.getElementById('patioActivoWrap');
+    if (!isNew) {
+        activoWrap.style.removeProperty('display');
+        document.getElementById('patioActivo').checked = !!patio.activo;
+    } else {
+        activoWrap.style.setProperty('display','none','important');
+    }
+    new bootstrap.Modal(document.getElementById('modalPatio')).show();
+}
+
+async function patioGuardar() {
+    const pk     = document.getElementById('patioPk').value;
+    const isNew  = !pk;
+    const payload = {
+        codigo: document.getElementById('patioCodigo').value.trim(),
+        nombre: document.getElementById('patioNombre').value.trim(),
+        coe:    document.getElementById('patioCoe').value.trim(),
+        orden:  parseInt(document.getElementById('patioOrden').value) || 99,
+    };
+    if (!isNew) {
+        payload.id = parseInt(pk);
+        payload.activo = document.getElementById('patioActivo').checked;
+    }
+    if (!payload.codigo || !payload.nombre) {
+        showToast('Código y nombre son obligatorios'); return;
+    }
+    const method = isNew ? 'POST' : 'PUT';
+    const r = await fetch('/api/patios/', {
+        method, headers: {'Content-Type':'application/json','X-CSRFToken':csrftoken},
+        body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if (j.status === 'ok') {
+        bootstrap.Modal.getInstance(document.getElementById('modalPatio'))?.hide();
+        showToast(isNew ? 'Patio creado' : 'Patio actualizado');
+        loadPatios();
+    } else {
+        showToast(j.message || 'Error al guardar patio');
+    }
+}
+
+async function patioEliminar(id, codigo) {
+    if (!confirm(`¿Eliminar patio ${codigo}?\nSi tiene usuarios asignados se desactivará en lugar de eliminarse.`)) return;
+    const r = await fetch('/api/patios/', {
+        method: 'DELETE',
+        headers: {'Content-Type':'application/json','X-CSRFToken':csrftoken},
+        body: JSON.stringify({id})
+    });
+    const j = await r.json();
+    showToast(j.accion === 'desactivado' ? `Patio desactivado (${j.razon})` : 'Patio eliminado');
+    loadPatios();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 6 — TICKETS & SOPORTE TÉCNICO (T6.1–T6.5)
+// ═══════════════════════════════════════════════════════════════════════════
+
+let currentTicketDetalle = null;
+
+async function actualizarBadgeTickets() {
+    try {
+        const r = await fetch('/api/tickets/?estado=ABIERTO');
+        const j = await r.json();
+        const badge = document.getElementById('navTicketsBadge');
+        if (badge && j.counts) {
+            const count = j.counts.abiertos || 0;
+            badge.textContent = count;
+            badge.classList.toggle('d-none', count === 0);
+        }
+    } catch (e) {
+        // silencioso
+    }
+}
+
+async function loadTickets() {
+    showLoading();
+    const q = document.getElementById('tkFiltroQ')?.value || '';
+    const estado = document.getElementById('tkFiltroEstado')?.value || '';
+    const prioridad = document.getElementById('tkFiltroPrioridad')?.value || '';
+    const categoria = document.getElementById('tkFiltroCategoria')?.value || '';
+    const soloMios = document.getElementById('tkSoloMios')?.checked ? '1' : '';
+
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (estado) params.set('estado', estado);
+    if (prioridad) params.set('prioridad', prioridad);
+    if (categoria) params.set('categoria', categoria);
+    if (soloMios) params.set('solo_mios', '1');
+
+    try {
+        const r = await fetch('/api/tickets/?' + params.toString());
+        const j = await r.json();
+        hideLoading();
+
+        if (j.status !== 'ok') {
+            showToast(j.message || 'Error cargando tickets');
+            return;
+        }
+
+        // Actualizar KPIs
+        if (j.counts) {
+            document.getElementById('tkStatTotal').textContent = j.counts.total ?? 0;
+            document.getElementById('tkStatAbiertos').textContent = j.counts.abiertos ?? 0;
+            document.getElementById('tkStatProgreso').textContent = j.counts.en_progreso ?? 0;
+            document.getElementById('tkStatResueltos').textContent = (j.counts.resueltos ?? 0) + (j.counts.cerrados ?? 0);
+            
+            const badgeNav = document.getElementById('navTicketsBadge');
+            if (badgeNav) {
+                badgeNav.textContent = j.counts.abiertos || 0;
+                badgeNav.classList.toggle('d-none', (j.counts.abiertos || 0) === 0);
+            }
+        }
+
+        const allData = j.tickets || [];
+        const ps = +(document.getElementById('tkPageSize')?.value || 15);
+
+        const estadoBadges = {
+            'ABIERTO': '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1"><i class="bi bi-exclamation-circle me-1"></i>Abierto</span>',
+            'EN_PROGRESO': '<span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1"><i class="bi bi-gear me-1"></i>En Progreso</span>',
+            'RESUELTO': '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1"><i class="bi bi-check2-circle me-1"></i>Resuelto</span>',
+            'CERRADO': '<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1"><i class="bi bi-archive me-1"></i>Cerrado</span>',
+        };
+
+        const prioridadBadges = {
+            'CRITICA': '<span class="badge bg-danger text-white">🚨 Crítica</span>',
+            'ALTA': '<span class="badge bg-warning text-dark">⚠️ Alta</span>',
+            'MEDIA': '<span class="badge bg-info text-dark">Media</span>',
+            'BAJA': '<span class="badge bg-light text-secondary border">Baja</span>',
+        };
+
+        const catIcons = {
+            'GPS': 'bi-broadcast-pin text-primary',
+            'EQUIPO_EMBARCADO': 'bi-hdd-network text-warning',
+            'APLICACION': 'bi-window-sidebar text-info',
+            'PATIO': 'bi-geo-alt text-success',
+            'OTRO': 'bi-tag text-secondary',
+        };
+
+        function renderTicketRow(t) {
+            const catIcon = catIcons[t.categoria] || 'bi-tag text-secondary';
+            const busBadge = t.bus_movil 
+                ? `<span class="badge bg-dark px-2 py-1"><i class="bi bi-bus-front me-1"></i>${t.bus_movil}</span>`
+                : '<span class="text-muted small">—</span>';
+            const patioTexto = t.patio_nombre ? `<small class="text-muted d-block">${t.patio_nombre}</small>` : '';
+            const asignadoTexto = t.asignado_a_nombre 
+                ? `<span class="fw-semibold text-primary"><i class="bi bi-person-check me-1"></i>${t.asignado_a_nombre}</span>` 
+                : '<span class="text-muted small fst-italic">Sin asignar</span>';
+            const comentariosBadge = (t.comentarios && t.comentarios.length > 0)
+                ? `<span class="badge bg-light text-secondary border ms-1" title="${t.comentarios.length} comentarios"><i class="bi bi-chat-left-dots me-1"></i>${t.comentarios.length}</span>`
+                : '';
+
+            return `
+                <td class="fw-bold text-muted">#${t.id}</td>
+                <td>${prioridadBadges[t.prioridad] || t.prioridad}</td>
+                <td>${estadoBadges[t.estado] || t.estado}</td>
+                <td>
+                    <div class="fw-semibold text-dark text-truncate" style="max-width: 280px;" title="${t.titulo}">${t.titulo}</div>
+                    <div class="small text-muted"><i class="bi ${catIcon} me-1"></i>${t.categoria_display || t.categoria}${comentariosBadge}</div>
+                </td>
+                <td>${busBadge}</td>
+                <td>
+                    <div class="fw-semibold">${t.creado_por_nombre}</div>
+                    <small class="text-muted">${t.creado_por_codigo}${patioTexto ? ' · ' + t.patio_nombre : ''}</small>
+                </td>
+                <td>${asignadoTexto}</td>
+                <td><small class="text-muted">${t.creado_en}</small></td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary" onclick="abrirDetalleTicket(${t.id})" title="Ver detalle y seguimiento">
+                        <i class="bi bi-eye"></i> Detalle
+                    </button>
+                </td>
+            `;
+        }
+
+        paginate('tk', allData, 1, ps, renderTicketRow, '#tablaTickets tbody', 'tkPagNav', 'tkInfoFooter');
+
+    } catch (e) {
+        hideLoading();
+        showToast('Error de conexión al cargar tickets');
+    }
+}
+
+function abrirModalReportarProblema(busMovil = null) {
+    const form = document.getElementById('formReportarProblema');
+    if (form) form.reset();
+    if (busMovil) {
+        const inputBus = document.getElementById('tkNuevoBus');
+        if (inputBus) inputBus.value = busMovil;
+    }
+    const modalEl = document.getElementById('modalReportarProblema');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+}
+
+async function guardarNuevoTicket(e) {
+    e.preventDefault();
+    const titulo = document.getElementById('tkNuevoTitulo').value.trim();
+    const descripcion = document.getElementById('tkNuevoDescripcion').value.trim();
+    const prioridad = document.getElementById('tkNuevoPrioridad').value;
+    const categoria = document.getElementById('tkNuevoCategoria').value;
+    const bus_movil = document.getElementById('tkNuevoBus').value;
+    const patio_id = document.getElementById('tkNuevoPatio').value;
+
+    if (!titulo || !descripcion) {
+        showToast('El título y la descripción son obligatorios');
+        return;
+    }
+
+    const btn = document.getElementById('btnGuardarTicket');
+    if (btn) btn.disabled = true;
+
+    try {
+        const r = await fetch('/api/tickets/crear/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify({
+                titulo, descripcion, prioridad, categoria,
+                bus_movil: bus_movil ? parseInt(bus_movil) : null,
+                patio_id: patio_id ? parseInt(patio_id) : null
+            })
+        });
+        const j = await r.json();
+        if (btn) btn.disabled = false;
+
+        if (j.status === 'ok') {
+            bootstrap.Modal.getInstance(document.getElementById('modalReportarProblema'))?.hide();
+            showToast(j.message || 'Ticket creado exitosamente');
+            actualizarBadgeTickets();
+            const secTk = document.getElementById('section-tickets');
+            if (secTk && !secTk.classList.contains('d-none')) {
+                loadTickets();
+            }
+        } else {
+            showToast(j.message || 'Error al crear ticket');
+        }
+    } catch (e) {
+        if (btn) btn.disabled = false;
+        showToast('Error de conexión al enviar el ticket');
+    }
+}
+
+async function abrirDetalleTicket(ticketId) {
+    showLoading();
+    try {
+        const r = await fetch(`/api/tickets/?q=${ticketId}`);
+        const j = await r.json();
+        hideLoading();
+
+        if (!j.tickets || j.tickets.length === 0) {
+            showToast('No se encontró información del ticket');
+            return;
+        }
+
+        const t = j.tickets.find(item => item.id === ticketId) || j.tickets[0];
+        currentTicketDetalle = t;
+
+        // Llenar datos
+        document.getElementById('tkDetalleId').textContent = `Ticket #${t.id}`;
+        document.getElementById('tkDetalleTitulo').textContent = t.titulo;
+        document.getElementById('tkDetalleCreador').textContent = `${t.creado_por_nombre} (${t.creado_por_codigo})`;
+        document.getElementById('tkDetalleFecha').textContent = t.creado_en || '—';
+        document.getElementById('tkDetalleCategoria').textContent = t.categoria_display || t.categoria;
+        document.getElementById('tkDetalleBus').textContent = t.bus_movil ? `Bus #${t.bus_movil}` : 'No aplica';
+        document.getElementById('tkDetallePatio').textContent = t.patio_nombre || 'No especificado';
+        document.getElementById('tkDetalleAsignado').textContent = t.asignado_a_nombre || 'Sin asignar';
+        document.getElementById('tkDetalleDescripcion').textContent = t.descripcion;
+
+        // Badges
+        const estadoBadge = document.getElementById('tkDetalleBadgeEstado');
+        estadoBadge.textContent = t.estado_display || t.estado;
+        estadoBadge.className = 'badge ' + (
+            t.estado === 'ABIERTO' ? 'bg-danger' :
+            t.estado === 'EN_PROGRESO' ? 'bg-primary' :
+            t.estado === 'RESUELTO' ? 'bg-success' : 'bg-secondary'
+        );
+
+        const prioridadBadge = document.getElementById('tkDetalleBadgePrioridad');
+        prioridadBadge.textContent = t.prioridad_display || t.prioridad;
+        prioridadBadge.className = 'badge ' + (
+            t.prioridad === 'CRITICA' ? 'bg-danger' :
+            t.prioridad === 'ALTA' ? 'bg-warning text-dark' :
+            t.prioridad === 'MEDIA' ? 'bg-info text-dark' : 'bg-light text-dark border'
+        );
+
+        // Resolución
+        const boxRes = document.getElementById('tkDetalleResolucionBox');
+        if (t.resolucion) {
+            boxRes.classList.remove('d-none');
+            document.getElementById('tkDetalleResolucionTexto').textContent = t.resolucion;
+            document.getElementById('tkDetalleResueltoEn').textContent = t.resuelto_en ? `(${t.resuelto_en})` : '';
+        } else {
+            boxRes.classList.add('d-none');
+        }
+
+        // Selector estado
+        const selectEstado = document.getElementById('tkAccionEstadoSelect');
+        if (selectEstado) selectEstado.value = t.estado;
+
+        // Selector asignado
+        const selectAsignar = document.getElementById('tkAccionAsignarSelect');
+        if (selectAsignar) selectAsignar.value = t.asignado_a_codigo || '';
+
+        // Comentarios
+        renderComentariosTicket(t.comentarios || []);
+
+        // Ocultar caja resolver
+        document.getElementById('tkBoxResolverForm')?.classList.add('d-none');
+        document.getElementById('tkNuevoComentarioTexto').value = '';
+
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDetalleTicket'));
+        modal.show();
+
+    } catch (e) {
+        hideLoading();
+        showToast('Error cargando detalle del ticket');
+    }
+}
+
+function renderComentariosTicket(comentarios) {
+    const list = document.getElementById('tkComentariosList');
+    list.innerHTML = '';
+    document.getElementById('tkComentariosCount').textContent = comentarios.length;
+
+    if (comentarios.length === 0) {
+        list.innerHTML = '<div class="text-center text-muted small py-3"><i class="bi bi-chat-square-dots me-1"></i>No hay comentarios aún. Escribe el primero abajo.</div>';
+        return;
+    }
+
+    comentarios.forEach(c => {
+        const item = document.createElement('div');
+        const badgeRol = c.es_admin ? '<span class="badge bg-primary bg-opacity-75 ms-1" style="font-size:0.68rem">Admin</span>' : '<span class="badge bg-secondary bg-opacity-75 ms-1" style="font-size:0.68rem">Técnico</span>';
+        item.className = 'p-2 bg-white rounded border shadow-xs';
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="fw-semibold small text-dark">${c.autor_nombre}${badgeRol}</span>
+                <span class="text-muted" style="font-size:0.75rem">${c.fecha || ''}</span>
+            </div>
+            <div class="text-secondary small" style="white-space: pre-wrap;">${c.texto}</div>
+        `;
+        list.appendChild(item);
+    });
+    list.scrollTop = list.scrollHeight;
+}
+
+async function ejecutarCambioEstadoTicket() {
+    if (!currentTicketDetalle) return;
+    const nuevo_estado = document.getElementById('tkAccionEstadoSelect').value;
+    try {
+        const r = await fetch('/api/tickets/accion/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify({
+                ticket_id: currentTicketDetalle.id,
+                accion: 'estado',
+                nuevo_estado
+            })
+        });
+        const j = await r.json();
+        if (j.status === 'ok') {
+            showToast(j.mensaje || 'Estado actualizado');
+            abrirDetalleTicket(currentTicketDetalle.id);
+            loadTickets();
+        } else {
+            showToast(j.message || 'Error al cambiar estado');
+        }
+    } catch (e) {
+        showToast('Error de conexión');
+    }
+}
+
+async function ejecutarAsignarTicket() {
+    if (!currentTicketDetalle) return;
+    const usuario_codigo = document.getElementById('tkAccionAsignarSelect').value;
+    try {
+        const r = await fetch('/api/tickets/accion/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify({
+                ticket_id: currentTicketDetalle.id,
+                accion: 'asignar',
+                usuario_codigo
+            })
+        });
+        const j = await r.json();
+        if (j.status === 'ok') {
+            showToast('Ticket asignado');
+            abrirDetalleTicket(currentTicketDetalle.id);
+            loadTickets();
+        } else {
+            showToast(j.message || 'Error al asignar ticket');
+        }
+    } catch (e) {
+        showToast('Error de conexión');
+    }
+}
+
+function mostrarPromptResolverTicket() {
+    const box = document.getElementById('tkBoxResolverForm');
+    if (box) {
+        box.classList.remove('d-none');
+        document.getElementById('tkTextoResolucion')?.focus();
+    }
+}
+
+async function confirmarResolverTicket() {
+    if (!currentTicketDetalle) return;
+    const resolucion = document.getElementById('tkTextoResolucion')?.value.trim() || '';
+    if (!resolucion) {
+        showToast('Por favor describe la resolución aplicada');
+        return;
+    }
+    try {
+        const r = await fetch('/api/tickets/accion/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify({
+                ticket_id: currentTicketDetalle.id,
+                accion: 'resolver',
+                resolucion
+            })
+        });
+        const j = await r.json();
+        if (j.status === 'ok') {
+            showToast('Ticket marcado como resuelto');
+            document.getElementById('tkBoxResolverForm')?.classList.add('d-none');
+            abrirDetalleTicket(currentTicketDetalle.id);
+            loadTickets();
+        } else {
+            showToast(j.message || 'Error al resolver ticket');
+        }
+    } catch (e) {
+        showToast('Error de conexión');
+    }
+}
+
+async function enviarComentarioTicket() {
+    if (!currentTicketDetalle) return;
+    const input = document.getElementById('tkNuevoComentarioTexto');
+    const texto = input?.value.trim() || '';
+    if (!texto) {
+        showToast('Escribe un comentario');
+        return;
+    }
+    try {
+        const r = await fetch('/api/tickets/accion/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify({
+                ticket_id: currentTicketDetalle.id,
+                accion: 'comentar',
+                texto
+            })
+        });
+        const j = await r.json();
+        if (j.status === 'ok') {
+            input.value = '';
+            if (!currentTicketDetalle.comentarios) currentTicketDetalle.comentarios = [];
+            currentTicketDetalle.comentarios.push(j.comentario);
+            renderComentariosTicket(currentTicketDetalle.comentarios);
+            showToast('Comentario guardado');
+        } else {
+            showToast(j.message || 'Error al guardar comentario');
+        }
+    } catch (e) {
+        showToast('Error de conexión');
+    }
+}
+
+// Iniciar badge al cargar página
+document.addEventListener('DOMContentLoaded', () => {
+    actualizarBadgeTickets();
+});
+</script>
+{% endblock %}

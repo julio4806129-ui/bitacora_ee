@@ -1,0 +1,13 @@
+Django>=5.0,<7
+psycopg2-binary>=2.9
+djangorestframework>=3.14
+django-cors-headers>=4.3
+python-decouple>=3.8
+celery[redis]>=5.3
+redis>=5.0
+requests>=2.31
+playwright>=1.40
+apscheduler>=3.10
+gunicorn>=21.0
+whitenoise>=6.6
+openpyxl>=3.1

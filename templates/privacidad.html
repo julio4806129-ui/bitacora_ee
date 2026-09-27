@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Política de privacidad — Bitácora E.E{% endblock %}
+{% block body %}
+<div class="container py-5" style="max-width:800px;">
+  <h1 class="h3 fw-bold mb-3">Política de privacidad</h1>
+  <p class="text-muted">Bitácora E.E — MiBus · Equipo Embarcado</p>
+  <hr>
+  <h2 class="h5">1. Datos que tratamos</h2>
+  <p>Códigos de técnico, nombre, patio asignado, registros de bitácora de revisiones de buses,
+     datos operativos de flota y telemetría GPS necesaria para la operación del servicio.</p>
+  <h2 class="h5">2. Finalidad</h2>
+  <p>Gestionar atenciones de equipo embarcado, cuotas de trabajo, auditoría interna y
+     continuidad operativa. No se venden datos a terceros.</p>
+  <h2 class="h5">3. Conservación</h2>
+  <p>Los registros de bitácora y auditoría se conservan según la política interna de MiBus
+     y la configuración del sistema (retención ajustable por administración).</p>
+  <h2 class="h5">4. Seguridad</h2>
+  <p>Contraseñas almacenadas con hash irreversible. Acceso por roles (Técnico, Supervisor, Admin).
+     Sesiones con caducidad. Registro de accesos en auditoría.</p>
+  <h2 class="h5">5. Derechos</h2>
+  <p>Para consultas sobre sus datos laborales en este sistema, contacte al administrador de Bitácora E.E
+     o al área de TI de MiBus.</p>
+  <p class="mt-4"><a href="{% url 'login' %}" class="btn btn-outline-primary">Volver al login</a></p>
+</div>
+{% endblock %}
