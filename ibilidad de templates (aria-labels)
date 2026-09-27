@@ -1,0 +1,588 @@
+[1mdiff --git a/templates/base.html b/templates/base.html[m
+[1mindex c1ed6b3..196991d 100644[m
+[1m--- a/templates/base.html[m
+[1m+++ b/templates/base.html[m
+[36m@@ -273,7 +273,7 @@[m
+     {% block extra_css %}{% endblock %}[m
+ </head>[m
+ <body>[m
+[31m-    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="cerrarSidebar()" role="presentation" aria-hidden="true"></div>[m
+[32m+[m[32m    <div role="button" tabindex="0" class="sidebar-backdrop" id="sidebarBackdrop" onclick="cerrarSidebar()" role="presentation" aria-hidden="true"></div>[m
+     {% block body %}{% endblock %}[m
+     <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>[m
+     <div class="loading-overlay" id="loadingOverlay" role="progressbar" aria-label="Cargando" aria-live="polite">[m
+[1mdiff --git a/templates/dashboard.html b/templates/dashboard.html[m
+[1mindex 83d248c..3bb4ba2 100644[m
+[1m--- a/templates/dashboard.html[m
+[1m+++ b/templates/dashboard.html[m
+[36m@@ -84,15 +84,15 @@[m
+           <div class="row g-3 mb-3">[m
+             <div class="col-md-4">[m
+               <label class="form-label small fw-semibold">Nombre del formulario</label>[m
+[31m-              <input type="text" id="editorNombre" class="form-control">[m
+[32m+[m[32m              <input aria-label="TODO_DESCRIBIR_editorNombre" type="text" id="editorNombre" class="form-control">[m
+             </div>[m
+             <div class="col-md-2">[m
+               <label class="form-label small fw-semibold">Versión</label>[m
+[31m-              <input type="text" id="editorVersion" class="form-control" readonly>[m
+[32m+[m[32m              <input aria-label="TODO_DESCRIBIR_editorVersion" type="text" id="editorVersion" class="form-control" readonly>[m
+             </div>[m
+             <div class="col-md-3">[m
+               <label class="form-label small fw-semibold">Código</label>[m
+[31m-              <input type="text" id="editorCodigo" class="form-control" readonly>[m
+[32m+[m[32m              <input aria-label="TODO_DESCRIBIR_editorCodigo" type="text" id="editorCodigo" class="form-control" readonly>[m
+             </div>[m
+             <div class="col-md-3 d-flex align-items-end">[m
+               <div class="form-check">[m
+[36m@@ -121,8 +121,8 @@[m
+                         <input class="form-check-input" type="checkbox" id="histSoloMios" onchange="loadHistorial()">[m
+                         <label class="form-check-label small" for="histSoloMios">Solo mías</label>[m
+                     </div>[m
+[31m-                    <input type="search" id="histBus" class="form-control form-control-sm" placeholder="Buscar bus…" style="width:120px" oninput="loadHistorial()">[m
+[31m-                    <button class="btn btn-sm btn-outline-primary" onclick="loadHistorial()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                    <input aria-label="Buscar bus…" type="search" id="histBus" class="form-control form-control-sm" placeholder="Buscar bus…" style="width:120px" oninput="loadHistorial()">[m
+[32m+[m[32m                    <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadHistorial()"><i class="bi bi-arrow-clockwise"></i></button>[m
+                 </div>[m
+             </div>[m
+             <div class="table-responsive">[m
+[36m@@ -147,7 +147,7 @@[m
+             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">[m
+                 <span class="text-muted small" id="histTotal"></span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="histPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeHistPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_histPageSize" id="histPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeHistPage(1)">[m
+                         <option value="25" selected>25</option><option value="50">50</option><option value="100">100</option>[m
+                     </select>[m
+                     <nav id="histPagNav"></nav>[m
+[36m@@ -162,8 +162,8 @@[m
+             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">[m
+                 <span class="fw-semibold"><i class="bi bi-list-check me-1"></i> Bitácora — Cola de trabajo</span>[m
+                 <div class="d-flex gap-2 flex-wrap">[m
+[31m-                    <input type="search" id="bitQ" class="form-control form-control-sm" placeholder="Bus…" style="width:100px" oninput="loadBitacora()">[m
+[31m-                    <select id="bitPatio" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">[m
+[32m+[m[32m                    <input aria-label="Bus…" type="search" id="bitQ" class="form-control form-control-sm" placeholder="Bus…" style="width:100px" oninput="loadBitacora()">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_bitPatio" id="bitPatio" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">[m
+                         <option value="">Todos los patios</option>[m
+                         <option value="Chorrillo">Chorrillo</option>[m
+                         <option value="Curundú">Curundú</option>[m
+[36m@@ -172,11 +172,11 @@[m
+                         <option value="La Cabima">La Cabima</option>[m
+                         <option value="Ojo de Agua">Ojo de Agua</option>[m
+                     </select>[m
+[31m-                    <select id="bitTecnico" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_bitTecnico" id="bitTecnico" class="form-select form-select-sm" style="width:auto" onchange="loadBitacora()">[m
+                         <option value="">Todos los técnicos</option>[m
+                         {% for t in tecnicos %}<option value="{{ t.nombre }}">{{ t.nombre }}</option>{% endfor %}[m
+                     </select>[m
+[31m-                    <button class="btn btn-sm btn-outline-primary" onclick="loadBitacora()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                    <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadBitacora()"><i class="bi bi-arrow-clockwise"></i></button>[m
+                 </div>[m
+             </div>[m
+             <div class="table-responsive">[m
+[36m@@ -198,7 +198,7 @@[m
+             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">[m
+                 <span class="text-muted small" id="bitTotal"></span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="bitPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeBitPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_bitPageSize" id="bitPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeBitPage(1)">[m
+                         <option value="25">25</option><option value="50">50</option>[m
+                         <option value="100">100</option><option value="250" selected>250</option>[m
+                     </select>[m
+[36m@@ -214,19 +214,19 @@[m
+             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">[m
+                 <span class="fw-semibold"><i class="bi bi-exclamation-triangle text-danger me-1"></i> Reportes GPS Offline</span>[m
+                 <div class="d-flex align-items-center gap-2 flex-wrap">[m
+[31m-                    <input type="search" id="repQ" class="form-control form-control-sm" placeholder="Buscar bus…" style="width:120px" oninput="loadReportes()">[m
+[31m-                    <select id="filtroPatioReportes" class="form-select form-select-sm" style="width:auto" onchange="loadReportes()">[m
+[32m+[m[32m                    <input aria-label="Buscar bus…" type="search" id="repQ" class="form-control form-control-sm" placeholder="Buscar bus…" style="width:120px" oninput="loadReportes()">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_filtroPatioReportes" id="filtroPatioReportes" class="form-select form-select-sm" style="width:auto" onchange="loadReportes()">[m
+                         <option value="">Todos los patios</option>[m
+                         {% for p in patios %}<option value="{{ p.nombre }}">{{ p.nombre }}</option>{% endfor %}[m
+                     </select>[m
+[31m-                    <button class="btn btn-sm btn-outline-primary" onclick="loadReportes()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                    <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadReportes()"><i class="bi bi-arrow-clockwise"></i></button>[m
+                 </div>[m
+             </div>[m
+             <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaReportes"><thead><tr><th>Móvil</th><th>GPS</th><th>Patio</th><th>Fecha</th><th>Hora</th><th>Diagnóstico</th><th></th></tr></thead><tbody></tbody></table></div>[m
+             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">[m
+                 <span class="text-muted small" id="repTotal"></span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="repPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeRepPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_repPageSize" id="repPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeRepPage(1)">[m
+                         <option value="25" selected>25</option><option value="50">50</option><option value="100">100</option>[m
+                     </select>[m
+                     <nav id="repPagNav"></nav>[m
+[36m@@ -241,11 +241,11 @@[m
+             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between flex-wrap gap-2">[m
+                 <span class="fw-semibold"><i class="bi bi-clipboard-check me-1"></i> Inventario de Flota</span>[m
+                 <div class="d-flex gap-2">[m
+[31m-                    <input type="search" id="invQ" class="form-control form-control-sm" placeholder="Bus/estado…" style="width:130px" oninput="loadInventario()">[m
+[31m-                    <select id="invPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeInvPage(1)">[m
+[32m+[m[32m                    <input aria-label="Bus/estado…" type="search" id="invQ" class="form-control form-control-sm" placeholder="Bus/estado…" style="width:130px" oninput="loadInventario()">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_invPageSize" id="invPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeInvPage(1)">[m
+                         <option value="50">50</option><option value="100" selected>100</option><option value="250">250</option>[m
+                     </select>[m
+[31m-                    <button class="btn btn-sm btn-outline-primary" onclick="loadInventario()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                    <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadInventario()"><i class="bi bi-arrow-clockwise"></i></button>[m
+                 </div>[m
+             </div>[m
+             <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaInventario"><thead><tr><th>Patio</th><th>Móvil</th><th>Hora</th><th>Estado</th><th>Últ. Atención</th><th>Fecha</th><th>Diagnóstico</th><th></th></tr></thead><tbody></tbody></table></div>[m
+[36m@@ -345,11 +345,11 @@[m
+                     <div class="col-md-3">[m
+                         <div class="input-group input-group-sm">[m
+                             <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>[m
+[31m-                            <input type="search" id="tkFiltroQ" class="form-control" placeholder="Buscar título, bus, técnico…" oninput="loadTickets()">[m
+[32m+[m[32m                            <input aria-label="Buscar título, bus, técnico…" type="search" id="tkFiltroQ" class="form-control" placeholder="Buscar título, bus, técnico…" oninput="loadTickets()">[m
+                         </div>[m
+                     </div>[m
+                     <div class="col-md-2">[m
+[31m-                        <select id="tkFiltroEstado" class="form-select form-select-sm" onchange="loadTickets()">[m
+[32m+[m[32m                        <select aria-label="TODO_DESCRIBIR_tkFiltroEstado" id="tkFiltroEstado" class="form-select form-select-sm" onchange="loadTickets()">[m
+                             <option value="">Estado: Todos</option>[m
+                             <option value="ABIERTO">Abiertos</option>[m
+                             <option value="EN_PROGRESO">En Progreso</option>[m
+[36m@@ -358,7 +358,7 @@[m
+                         </select>[m
+                     </div>[m
+                     <div class="col-md-2">[m
+[31m-                        <select id="tkFiltroPrioridad" class="form-select form-select-sm" onchange="loadTickets()">[m
+[32m+[m[32m                        <select aria-label="TODO_DESCRIBIR_tkFiltroPrioridad" id="tkFiltroPrioridad" class="form-select form-select-sm" onchange="loadTickets()">[m
+                             <option value="">Prioridad: Todas</option>[m
+                             <option value="CRITICA">Crítica</option>[m
+                             <option value="ALTA">Alta</option>[m
+[36m@@ -367,7 +367,7 @@[m
+                         </select>[m
+                     </div>[m
+                     <div class="col-md-2">[m
+[31m-                        <select id="tkFiltroCategoria" class="form-select form-select-sm" onchange="loadTickets()">[m
+[32m+[m[32m                        <select aria-label="TODO_DESCRIBIR_tkFiltroCategoria" id="tkFiltroCategoria" class="form-select form-select-sm" onchange="loadTickets()">[m
+                             <option value="">Categoría: Todas</option>[m
+                             <option value="GPS">GPS / Conectividad</option>[m
+                             <option value="EQUIPO_EMBARCADO">Equipo Embarcado</option>[m
+[36m@@ -409,7 +409,7 @@[m
+             <div class="card-footer bg-white border-0 py-2 d-flex justify-content-between align-items-center flex-wrap gap-2 small text-muted">[m
+                 <span id="tkInfoFooter">Cargando tickets...</span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="tkPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeTkPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_tkPageSize" id="tkPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeTkPage(1)">[m
+                         <option value="15" selected>15</option><option value="30">30</option><option value="50">50</option>[m
+                     </select>[m
+                     <nav id="tkPagNav"></nav>[m
+[36m@@ -425,8 +425,8 @@[m
+             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between flex-wrap gap-2">[m
+                 <span class="fw-semibold">Inventario de Flota (Buses)</span>[m
+                 <div class="d-flex gap-2 flex-wrap">[m
+[31m-                    <input type="search" id="flotaQ" class="form-control form-control-sm" placeholder="Buscar bus/placa" style="width:140px" oninput="loadFlota()">[m
+[31m-                    <select id="flotaEstado" class="form-select form-select-sm" style="width:auto" onchange="loadFlota()">[m
+[32m+[m[32m                    <input aria-label="Buscar bus/placa" type="search" id="flotaQ" class="form-control form-control-sm" placeholder="Buscar bus/placa" style="width:140px" oninput="loadFlota()">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_flotaEstado" id="flotaEstado" class="form-select form-select-sm" style="width:auto" onchange="loadFlota()">[m
+                         <option value="">Todos</option>[m
+                         <option value="ACTIVO">Activo</option>[m
+                         <option value="MANTENIMIENTO">Mantenimiento</option>[m
+[36m@@ -436,7 +436,7 @@[m
+                     <button class="btn btn-sm btn-accent" onclick="showFlotaAlta()"><i class="bi bi-plus"></i> Alta</button>[m
+                     <label class="btn btn-sm btn-outline-secondary mb-0"><i class="bi bi-upload"></i> CSV<input type="file" id="flotaCSV" accept=".csv" hidden onchange="importFlota(this)"></label>[m
+                     <label class="btn btn-sm btn-outline-success mb-0"><i class="bi bi-file-earmark-excel"></i> Matriz Excel<input type="file" id="flotaXLSX" accept=".xlsx,.xls" hidden onchange="importMatrizExcel(this)"></label>[m
+[31m-                    <button class="btn btn-sm btn-outline-primary" onclick="loadFlota()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                    <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadFlota()"><i class="bi bi-arrow-clockwise"></i></button>[m
+                 </div>[m
+             </div>[m
+             <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaFlota"><thead><tr>[m
+[36m@@ -446,7 +446,7 @@[m
+             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">[m
+                 <span class="text-muted small" id="flotaTotal"></span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="flotaPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeFlotaPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_flotaPageSize" id="flotaPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeFlotaPage(1)">[m
+                         <option value="50">50</option><option value="100" selected>100</option><option value="250">250</option>[m
+                     </select>[m
+                     <nav id="flotaPagNav"></nav>[m
+[36m@@ -461,24 +461,24 @@[m
+             <div class="card-header bg-white border-0 py-3 d-flex justify-content-between flex-wrap gap-2">[m
+                 <span class="fw-semibold">Dispositivos GPS</span>[m
+                 <div class="d-flex gap-2">[m
+[31m-                    <select id="gpsEstado" class="form-select form-select-sm" style="width:auto" onchange="loadGPS()">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_gpsEstado" id="gpsEstado" class="form-select form-select-sm" style="width:auto" onchange="loadGPS()">[m
+                         <option value="">Todos</option>[m
+                         <option value="INSTALADO">Instalado</option>[m
+                         <option value="BODEGA">Bodega</option>[m
+                         <option value="REPARACION">Reparación</option>[m
+                         <option value="BAJA">Baja</option>[m
+                     </select>[m
+[31m-                    <input type="search" id="gpsQ" class="form-control form-control-sm" placeholder="IMEI/bus…" style="width:120px" oninput="loadGPS()">[m
+[32m+[m[32m                    <input aria-label="IMEI/bus…" type="search" id="gpsQ" class="form-control form-control-sm" placeholder="IMEI/bus…" style="width:120px" oninput="loadGPS()">[m
+                     <button class="btn btn-sm btn-accent" onclick="showGPSAlta()"><i class="bi bi-plus"></i> Alta</button>[m
+                     <label class="btn btn-sm btn-outline-secondary mb-0"><i class="bi bi-upload"></i> CSV<input type="file" id="gpsCSV" accept=".csv" hidden onchange="importGPS(this)"></label>[m
+[31m-                    <button class="btn btn-sm btn-outline-primary" onclick="loadGPS()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                    <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadGPS()"><i class="bi bi-arrow-clockwise"></i></button>[m
+                 </div>[m
+             </div>[m
+             <div class="table-responsive"><table class="table table-hover table-modern mb-0" id="tablaGPS"><thead><tr><th>IMEI</th><th>Modelo</th><th>Estado</th><th>Bus</th><th>Teléfono</th><th></th></tr></thead><tbody></tbody></table></div>[m
+             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">[m
+                 <span class="text-muted small" id="gpsTotal"></span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="gpsPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGpsPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_gpsPageSize" id="gpsPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGpsPage(1)">[m
+                         <option value="50">50</option><option value="100" selected>100</option><option value="200">200</option>[m
+                     </select>[m
+                     <nav id="gpsPagNav"></nav>[m
+[36m@@ -510,7 +510,7 @@[m
+               <div class="row g-3 mt-1">[m
+                 <div class="col-md-6">[m
+                   <label class="form-label fw-semibold">Nombre de la aplicación</label>[m
+[31m-                  <input type="text" id="cfg_app_nombre" class="form-control" placeholder="Bitácora E.E">[m
+[32m+[m[32m                  <input aria-label="Bitácora E.E" type="text" id="cfg_app_nombre" class="form-control" placeholder="Bitácora E.E">[m
+                   <div class="form-text">Aparece en el encabezado del sidebar y títulos.</div>[m
+                 </div>[m
+               </div>[m
+[36m@@ -526,7 +526,7 @@[m
+                 <div class="col-md-4">[m
+                   <label class="form-label fw-semibold">Hora de corte del contador diario</label>[m
+                   <div class="input-group">[m
+[31m-                    <input type="number" id="cfg_turno_hora" class="form-control" min="0" max="23" placeholder="8">[m
+[32m+[m[32m                    <input aria-label="TODO_DESCRIBIR_cfg_turno_hora" type="number" id="cfg_turno_hora" class="form-control" min="0" max="23" placeholder="8">[m
+                     <span class="input-group-text">h</span>[m
+                   </div>[m
+                   <div class="form-text">Después de esta hora inicia el nuevo día laboral (0–23).</div>[m
+[36m@@ -534,7 +534,7 @@[m
+                 <div class="col-md-4">[m
+                   <label class="form-label fw-semibold">Intervalo del poller</label>[m
+                   <div class="input-group">[m
+[31m-                    <input type="number" id="cfg_poller_intervalo" class="form-control" min="1" max="120" placeholder="5">[m
+[32m+[m[32m                    <input aria-label="TODO_DESCRIBIR_cfg_poller_intervalo" type="number" id="cfg_poller_intervalo" class="form-control" min="1" max="120" placeholder="5">[m
+                     <span class="input-group-text">min</span>[m
+                   </div>[m
+                   <div class="form-text">Frecuencia de sincronización automática con BUSAE/Genesis.</div>[m
+[36m@@ -567,7 +567,7 @@[m
+               <div class="row g-3 mt-1">[m
+                 <div class="col-md-4">[m
+                   <label class="form-label fw-semibold">Cuota diaria por defecto</label>[m
+[31m-                  <input type="number" id="cfg_bitacora_cuota" class="form-control" min="0" max="500" placeholder="10">[m
+[32m+[m[32m                  <input aria-label="TODO_DESCRIBIR_cfg_bitacora_cuota" type="number" id="cfg_bitacora_cuota" class="form-control" min="0" max="500" placeholder="10">[m
+                   <div class="form-text">Cuota asignada a nuevos usuarios al crearlos.</div>[m
+                 </div>[m
+                 <div class="col-md-4">[m
+[36m@@ -589,16 +589,16 @@[m
+               <div class="row g-3 mt-1">[m
+                 <div class="col-md-4">[m
+                   <label class="form-label fw-semibold">Intentos máx. de login</label>[m
+[31m-                  <input type="number" id="cfg_login_max" class="form-control" min="1" max="20" placeholder="5">[m
+[32m+[m[32m                  <input aria-label="TODO_DESCRIBIR_cfg_login_max" type="number" id="cfg_login_max" class="form-control" min="1" max="20" placeholder="5">[m
+                 </div>[m
+                 <div class="col-md-4">[m
+                   <label class="form-label fw-semibold">Minutos de bloqueo</label>[m
+[31m-                  <input type="number" id="cfg_login_bloqueo" class="form-control" min="1" max="1440" placeholder="15">[m
+[32m+[m[32m                  <input aria-label="TODO_DESCRIBIR_cfg_login_bloqueo" type="number" id="cfg_login_bloqueo" class="form-control" min="1" max="1440" placeholder="15">[m
+                 </div>[m
+                 <div class="col-md-4">[m
+                   <label class="form-label fw-semibold">Duración de sesión</label>[m
+                   <div class="input-group">[m
+[31m-                    <input type="number" id="cfg_sesion_horas" class="form-control" min="1" max="72" placeholder="8">[m
+[32m+[m[32m                    <input aria-label="TODO_DESCRIBIR_cfg_sesion_horas" type="number" id="cfg_sesion_horas" class="form-control" min="1" max="72" placeholder="8">[m
+                     <span class="input-group-text">h</span>[m
+                   </div>[m
+                 </div>[m
+[36m@@ -620,7 +620,7 @@[m
+                         <div class="form-text">Permite crear y gestionar tickets de soporte.</div>[m
+                       </div>[m
+                       <div class="form-check form-switch mb-0">[m
+[31m-                        <input class="form-check-input" type="checkbox" id="cfg_ff_tickets" role="switch">[m
+[32m+[m[32m                        <input aria-label="TODO_DESCRIBIR_cfg_ff_tickets" class="form-check-input" type="checkbox" id="cfg_ff_tickets" role="switch">[m
+                       </div>[m
+                     </div>[m
+                   </div>[m
+[36m@@ -633,7 +633,7 @@[m
+                         <div class="form-text">Guarda borradores de formulario antes de enviar.</div>[m
+                       </div>[m
+                       <div class="form-check form-switch mb-0">[m
+[31m-                        <input class="form-check-input" type="checkbox" id="cfg_ff_borradores" role="switch">[m
+[32m+[m[32m                        <input aria-label="TODO_DESCRIBIR_cfg_ff_borradores" class="form-check-input" type="checkbox" id="cfg_ff_borradores" role="switch">[m
+                       </div>[m
+                     </div>[m
+                   </div>[m
+[36m@@ -646,7 +646,7 @@[m
+                         <div class="form-text">Habilita exportación de bitácoras a Excel.</div>[m
+                       </div>[m
+                       <div class="form-check form-switch mb-0">[m
+[31m-                        <input class="form-check-input" type="checkbox" id="cfg_ff_excel" role="switch">[m
+[32m+[m[32m                        <input aria-label="TODO_DESCRIBIR_cfg_ff_excel" class="form-check-input" type="checkbox" id="cfg_ff_excel" role="switch">[m
+                       </div>[m
+                     </div>[m
+                   </div>[m
+[36m@@ -693,20 +693,20 @@[m
+             <input type="hidden" id="patioPk">[m
+             <div class="mb-3">[m
+               <label class="form-label fw-semibold">Código <span class="text-danger">*</span></label>[m
+[31m-              <input type="text" id="patioCodigo" class="form-control" placeholder="CHORRILLO" maxlength="30">[m
+[32m+[m[32m              <input aria-label="CHORRILLO" type="text" id="patioCodigo" class="form-control" placeholder="CHORRILLO" maxlength="30">[m
+               <div class="form-text">Sin espacios, en mayúsculas. No editable después de crear.</div>[m
+             </div>[m
+             <div class="mb-3">[m
+               <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>[m
+[31m-              <input type="text" id="patioNombre" class="form-control" placeholder="Chorrillo" maxlength="80">[m
+[32m+[m[32m              <input aria-label="Chorrillo" type="text" id="patioNombre" class="form-control" placeholder="Chorrillo" maxlength="80">[m
+             </div>[m
+             <div class="mb-3">[m
+               <label class="form-label fw-semibold">COE</label>[m
+[31m-              <input type="text" id="patioCoe" class="form-control" placeholder="P-CHORRILLO" maxlength="20">[m
+[32m+[m[32m              <input aria-label="P-CHORRILLO" type="text" id="patioCoe" class="form-control" placeholder="P-CHORRILLO" maxlength="20">[m
+             </div>[m
+             <div class="mb-3">[m
+               <label class="form-label fw-semibold">Orden</label>[m
+[31m-              <input type="number" id="patioOrden" class="form-control" value="99" min="0" max="999">[m
+[32m+[m[32m              <input aria-label="TODO_DESCRIBIR_patioOrden" type="number" id="patioOrden" class="form-control" value="99" min="0" max="999">[m
+             </div>[m
+             <div class="mb-3 form-check form-switch" id="patioActivoWrap" style="display:none!important;">[m
+               <input class="form-check-input" type="checkbox" id="patioActivo" checked>[m
+[36m@@ -778,7 +778,7 @@[m
+                         <h6 class="fw-bold mb-2"><i class="bi bi-cloud-upload text-primary me-2"></i>Carga manual Genesis (CSV)</h6>[m
+                         <p class="text-muted small">Carga manual de monitoreo Genesis. Columnas: <code>bus_movil, origen, destino, patio, hora_entrada, estado, ruta</code></p>[m
+                         <div class="mb-3">[m
+[31m-                            <input type="file" id="genesisCSV" accept=".csv" class="form-control">[m
+[32m+[m[32m                            <input aria-label="TODO_DESCRIBIR_genesisCSV" type="file" id="genesisCSV" accept=".csv" class="form-control">[m
+                         </div>[m
+                         <button class="btn btn-accent" onclick="importGenesis()"><i class="bi bi-cloud-upload me-1"></i> Importar Genesis</button>[m
+                         <div id="genesisResult" class="mt-3"></div>[m
+[36m@@ -793,7 +793,7 @@[m
+                         <h6 class="fw-bold mb-2"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Carga manual BUSAE (CSV)</h6>[m
+                         <p class="text-muted small">Carga manual de mapa/telemetría BUSAE. Columnas: <code>bus_movil, estado, latitud, longitud, velocidad, ultima_transmision, manos_libres, telefono</code></p>[m
+                         <div class="mb-3">[m
+[31m-                            <input type="file" id="busaeCSV" accept=".csv" class="form-control">[m
+[32m+[m[32m                            <input aria-label="TODO_DESCRIBIR_busaeCSV" type="file" id="busaeCSV" accept=".csv" class="form-control">[m
+                         </div>[m
+                         <button class="btn btn-success" onclick="importBusae()"><i class="bi bi-cloud-upload me-1"></i> Importar BUSAE</button>[m
+                         <div id="busaeResult" class="mt-3"></div>[m
+[36m@@ -810,8 +810,8 @@[m
+                     <small class="text-muted">Estado integrado de Genesis (monitoreo) y BUSAE (telemetría GPS)</small>[m
+                 </div>[m
+                 <div class="d-flex align-items-center gap-2 flex-wrap">[m
+[31m-                    <input type="search" id="genesisQ" class="form-control form-control-sm" placeholder="Buscar bus..." style="width:130px" oninput="loadGenesisTable()">[m
+[31m-                    <button class="btn btn-sm btn-outline-primary" onclick="loadGenesisTable()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                    <input aria-label="Buscar bus..." type="search" id="genesisQ" class="form-control form-control-sm" placeholder="Buscar bus..." style="width:130px" oninput="loadGenesisTable()">[m
+[32m+[m[32m                    <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadGenesisTable()"><i class="bi bi-arrow-clockwise"></i></button>[m
+                 </div>[m
+             </div>[m
+             <div class="table-responsive">[m
+[36m@@ -834,7 +834,7 @@[m
+             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">[m
+                 <span class="text-muted small" id="genesisTotal"></span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="genesisPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGenesisPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_genesisPageSize" id="genesisPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeGenesisPage(1)">[m
+                         <option value="25">25</option><option value="50" selected>50</option><option value="100">100</option>[m
+                     </select>[m
+                     <nav id="genesisPagNav"></nav>[m
+[36m@@ -848,20 +848,20 @@[m
+         <div class="card border-0 shadow-sm" style="border-radius:12px;">[m
+             <div class="card-header bg-white border-0 py-3 d-flex gap-2 flex-wrap">[m
+                 <span class="fw-semibold me-auto">Registro de Auditoría</span>[m
+[31m-                <select id="audAccion" class="form-select form-select-sm" style="width:auto" onchange="loadAuditoria()">[m
+[32m+[m[32m                <select aria-label="TODO_DESCRIBIR_audAccion" id="audAccion" class="form-select form-select-sm" style="width:auto" onchange="loadAuditoria()">[m
+                     <option value="">Todas las acciones</option>[m
+                     <option>LOGIN</option><option>LOGIN_FAIL</option><option>CREATE</option><option>UPDATE</option>[m
+                     <option>DELETE</option><option>BAJA</option><option>ASIGNAR</option><option>MOVER</option>[m
+                     <option>ATENDER</option><option>IMPORT</option>[m
+                 </select>[m
+[31m-                <input type="date" id="audDesde" class="form-control form-control-sm" style="width:auto" onchange="loadAuditoria()">[m
+[31m-                <button class="btn btn-sm btn-outline-primary" onclick="loadAuditoria()"><i class="bi bi-arrow-clockwise"></i></button>[m
+[32m+[m[32m                <input aria-label="TODO_DESCRIBIR_audDesde" type="date" id="audDesde" class="form-control form-control-sm" style="width:auto" onchange="loadAuditoria()">[m
+[32m+[m[32m                <button aria-label="Actualizar" class="btn btn-sm btn-outline-primary" onclick="loadAuditoria()"><i class="bi bi-arrow-clockwise"></i></button>[m
+             </div>[m
+             <div class="table-responsive"><table class="table table-hover table-modern mb-0 table-sm" id="tablaAuditoria"><thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Modelo</th><th>ID</th><th>Descripción</th><th>IP</th></tr></thead><tbody></tbody></table></div>[m
+             <div class="card-footer bg-white border-0 d-flex align-items-center flex-wrap gap-2 py-2">[m
+                 <span class="text-muted small" id="audTotal"></span>[m
+                 <div class="ms-auto d-flex align-items-center gap-1">[m
+[31m-                    <select id="audPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeAudPage(1)">[m
+[32m+[m[32m                    <select aria-label="TODO_DESCRIBIR_audPageSize" id="audPageSize" class="form-select form-select-sm" style="width:75px;" onchange="changeAudPage(1)">[m
+                         <option value="50" selected>50</option><option value="100">100</option><option value="200">200</option>[m
+                     </select>[m
+                     <nav id="audPagNav"></nav>[m
+[36m@@ -982,11 +982,11 @@[m
+           <div class="row g-3">[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold">Código de Empleado <span class="text-danger">*</span></label>[m
+[31m-              <input type="text" id="usrCodigo" class="form-control" placeholder="ej. 13283" required autocomplete="off">[m
+[32m+[m[32m              <input aria-label="ej. 13283" type="text" id="usrCodigo" class="form-control" placeholder="ej. 13283" required autocomplete="off">[m
+             </div>[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold">Rol del Sistema <span class="text-danger">*</span></label>[m
+[31m-              <select id="usrRol" class="form-select" required>[m
+[32m+[m[32m              <select aria-label="TODO_DESCRIBIR_usrRol" id="usrRol" class="form-select" required>[m
+                 <option value="TECNICO">Técnico de Campo</option>[m
+                 <option value="SUPERVISOR">Supervisor</option>[m
+                 <option value="ADMIN">Administrador</option>[m
+[36m@@ -994,11 +994,11 @@[m
+             </div>[m
+             <div class="col-12">[m
+               <label class="form-label fw-semibold">Nombre Completo <span class="text-danger">*</span></label>[m
+[31m-              <input type="text" id="usrNombre" class="form-control" placeholder="ej. Juan Pérez" required>[m
+[32m+[m[32m              <input aria-label="ej. Juan Pérez" type="text" id="usrNombre" class="form-control" placeholder="ej. Juan Pérez" required>[m
+             </div>[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold">Patio Asignado</label>[m
+[31m-              <select id="usrPatio" class="form-select">[m
+[32m+[m[32m              <select aria-label="TODO_DESCRIBIR_usrPatio" id="usrPatio" class="form-select">[m
+                 <option value="">— Sin patio fijo —</option>[m
+                 {% for p in patios %}[m
+                 <option value="{{ p.id }}">{{ p.nombre }}</option>[m
+[36m@@ -1007,11 +1007,11 @@[m
+             </div>[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold">Cuota Diaria</label>[m
+[31m-              <input type="number" id="usrCuota" class="form-control" min="0" value="0">[m
+[32m+[m[32m              <input aria-label="TODO_DESCRIBIR_usrCuota" type="number" id="usrCuota" class="form-control" min="0" value="0">[m
+             </div>[m
+             <div class="col-12">[m
+               <label class="form-label fw-semibold">Correo Electrónico</label>[m
+[31m-              <input type="email" id="usrEmail" class="form-control" placeholder="usuario@miempresa.com">[m
+[32m+[m[32m              <input aria-label="usuario@miempresa.com" type="email" id="usrEmail" class="form-control" placeholder="usuario@miempresa.com">[m
+             </div>[m
+             <div class="col-12">[m
+               <label class="form-label fw-semibold d-flex justify-content-between">[m
+[36m@@ -1020,8 +1020,8 @@[m
+               </label>[m
+               <div class="input-group">[m
+                 <span class="input-group-text bg-white"><i class="bi bi-shield-lock"></i></span>[m
+[31m-                <input type="password" id="usrPassword" class="form-control" autocomplete="new-password">[m
+[31m-                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('usrPassword', this)" tabindex="-1">[m
+[32m+[m[32m                <input aria-label="TODO_DESCRIBIR_usrPassword" type="password" id="usrPassword" class="form-control" autocomplete="new-password">[m
+[32m+[m[32m                <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('usrPassword', this)" tabindex="-1">[m
+                   <i class="bi bi-eye"></i>[m
+                 </button>[m
+               </div>[m
+[36m@@ -1060,8 +1060,8 @@[m
+             <label class="form-label fw-semibold">Nueva Contraseña <span class="text-danger">*</span></label>[m
+             <div class="input-group">[m
+               <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>[m
+[31m-              <input type="password" id="resetPwdInput" class="form-control" placeholder="Mínimo 4 caracteres" minlength="4" required autocomplete="new-password">[m
+[31m-              <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('resetPwdInput', this)" tabindex="-1">[m
+[32m+[m[32m              <input aria-label="Mínimo 4 caracteres" type="password" id="resetPwdInput" class="form-control" placeholder="Mínimo 4 caracteres" minlength="4" required autocomplete="new-password">[m
+[32m+[m[32m              <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('resetPwdInput', this)" tabindex="-1">[m
+                 <i class="bi bi-eye"></i>[m
+               </button>[m
+             </div>[m
+[36m@@ -1090,7 +1090,7 @@[m
+         <div class="mb-3"><label class="form-label">Modelo</label><input type="text" id="flotaModelo" class="form-control"></div>[m
+         <div class="mb-3"><label class="form-label">Año</label><input type="number" id="flotaAnio" class="form-control" min="1990" max="2030"></div>[m
+         <div class="mb-3"><label class="form-label">Patio base</label>[m
+[31m-            <select id="flotaPatio" class="form-select"><option value="">—</option>{% for p in patios %}<option value="{{ p.codigo }}">{{ p.nombre }}</option>{% endfor %}</select>[m
+[32m+[m[32m            <select aria-label="TODO_DESCRIBIR_flotaPatio" id="flotaPatio" class="form-select"><option value="">—</option>{% for p in patios %}<option value="{{ p.codigo }}">{{ p.nombre }}</option>{% endfor %}</select>[m
+         </div>[m
+     </div>[m
+     <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Guardar</button></div>[m
+[36m@@ -1125,12 +1125,12 @@[m
+         <div class="modal-body p-4">[m
+           <div class="mb-3">[m
+             <label class="form-label fw-semibold small">Título de la incidencia <span class="text-danger">*</span></label>[m
+[31m-            <input type="text" id="tkNuevoTitulo" class="form-control" placeholder="Ej: GPS no transmite tras cambio de batería" required maxlength="200">[m
+[32m+[m[32m            <input aria-label="Ej: GPS no transmite tras cambio de batería" type="text" id="tkNuevoTitulo" class="form-control" placeholder="Ej: GPS no transmite tras cambio de batería" required maxlength="200">[m
+           </div>[m
+           <div class="row g-2 mb-3">[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold small">Categoría <span class="text-danger">*</span></label>[m
+[31m-              <select id="tkNuevoCategoria" class="form-select" required>[m
+[32m+[m[32m              <select aria-label="TODO_DESCRIBIR_tkNuevoCategoria" id="tkNuevoCategoria" class="form-select" required>[m
+                 <option value="GPS">GPS / Conectividad</option>[m
+                 <option value="EQUIPO_EMBARCADO" selected>Equipo Embarcado / Hardware</option>[m
+                 <option value="APLICACION">Aplicación / Sistema</option>[m
+[36m@@ -1140,7 +1140,7 @@[m
+             </div>[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold small">Prioridad <span class="text-danger">*</span></label>[m
+[31m-              <select id="tkNuevoPrioridad" class="form-select" required>[m
+[32m+[m[32m              <select aria-label="TODO_DESCRIBIR_tkNuevoPrioridad" id="tkNuevoPrioridad" class="form-select" required>[m
+                 <option value="BAJA">Baja</option>[m
+                 <option value="MEDIA" selected>Media</option>[m
+                 <option value="ALTA">Alta</option>[m
+[36m@@ -1151,11 +1151,11 @@[m
+           <div class="row g-2 mb-3">[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold small">Bus / Móvil relacionado (opcional)</label>[m
+[31m-              <input type="number" id="tkNuevoBus" class="form-control" placeholder="Ej: 1045" min="1" max="9999">[m
+[32m+[m[32m              <input aria-label="Ej: 1045" type="number" id="tkNuevoBus" class="form-control" placeholder="Ej: 1045" min="1" max="9999">[m
+             </div>[m
+             <div class="col-md-6">[m
+               <label class="form-label fw-semibold small">Patio (opcional)</label>[m
+[31m-              <select id="tkNuevoPatio" class="form-select">[m
+[32m+[m[32m              <select aria-label="TODO_DESCRIBIR_tkNuevoPatio" id="tkNuevoPatio" class="form-select">[m
+                 <option value="">Seleccionar patio…</option>[m
+                 {% for p in patios %}[m
+                 <option value="{{ p.id }}">{{ p.nombre }}</option>[m
+[36m@@ -1165,7 +1165,7 @@[m
+           </div>[m
+           <div class="mb-2">[m
+             <label class="form-label fw-semibold small">Descripción detallada <span class="text-danger">*</span></label>[m
+[31m-            <textarea id="tkNuevoDescripcion" class="form-control" rows="4" placeholder="Describe los síntomas del problema, el comportamiento observado y cualquier acción previa..." required></textarea>[m
+[32m+[m[32m            <textarea aria-label="Describe los síntomas del problema, el comportamiento observado y cualquier acción previa..." id="tkNuevoDescripcion" class="form-control" rows="4" placeholder="Describe los síntomas del problema, el comportamiento observado y cualquier acción previa..." required></textarea>[m
+           </div>[m
+         </div>[m
+         <div class="modal-footer border-0 pt-0">[m
+[36m@@ -1231,7 +1231,7 @@[m
+               <div class="col-md-5">[m
+                 <label class="form-label small fw-semibold mb-1">Cambiar estado:</label>[m
+                 <div class="input-group input-group-sm">[m
+[31m-                  <select id="tkAccionEstadoSelect" class="form-select form-select-sm">[m
+[32m+[m[32m                  <select aria-label="TODO_DESCRIBIR_tkAccionEstadoSelect" id="tkAccionEstadoSelect" class="form-select form-select-sm">[m
+                     <option value="ABIERTO">Abierto</option>[m
+                     <option value="EN_PROGRESO">En Progreso</option>[m
+                     <option value="RESUELTO">Resuelto</option>[m
+[36m@@ -1243,7 +1243,7 @@[m
+               <div class="col-md-4" id="tkColAsignar">[m
+                 <label class="form-label small fw-semibold mb-1">Asignar a:</label>[m
+                 <div class="input-group input-group-sm">[m
+[31m-                  <select id="tkAccionAsignarSelect" class="form-select form-select-sm">[m
+[32m+[m[32m                  <select aria-label="TODO_DESCRIBIR_tkAccionAsignarSelect" id="tkAccionAsignarSelect" class="form-select form-select-sm">[m
+                     <option value="">Sin asignar</option>[m
+                     {% for t in tecnicos %}[m
+                     <option value="{{ t.codigo }}">{{ t.nombre }}</option>[m
+[36m@@ -1261,7 +1261,7 @@[m
+             <!-- Formulario desplegable para resolución -->[m
+             <div id="tkBoxResolverForm" class="mt-3 p-3 bg-white border rounded-3 d-none">[m
+               <label class="form-label small fw-bold text-success">Detalle de cómo se resolvió la incidencia:</label>[m
+[31m-              <textarea id="tkTextoResolucion" class="form-control form-control-sm mb-2" rows="2" placeholder="Describe la solución aplicada, repuestos utilizados o pruebas realizadas..."></textarea>[m
+[32m+[m[32m              <textarea aria-label="Describe la solución aplicada, repuestos utilizados o pruebas realizadas..." id="tkTextoResolucion" class="form-control form-control-sm mb-2" rows="2" placeholder="Describe la solución aplicada, repuestos utilizados o pruebas realizadas..."></textarea>[m
+               <div class="d-flex justify-content-end gap-2">[m
+                 <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('tkBoxResolverForm').classList.add('d-none')">Cancelar</button>[m
+                 <button type="button" class="btn btn-sm btn-success" onclick="confirmarResolverTicket()">Confirmar resolución</button>[m
+[36m@@ -1280,7 +1280,7 @@[m
+           </div>[m
+           <!-- Formulario nuevo comentario -->[m
+           <div class="input-group">[m
+[31m-            <textarea id="tkNuevoComentarioTexto" class="form-control form-control-sm" rows="1" placeholder="Escribir una nota o respuesta..."></textarea>[m
+[32m+[m[32m            <textarea aria-label="Escribir una nota o respuesta..." id="tkNuevoComentarioTexto" class="form-control form-control-sm" rows="1" placeholder="Escribir una nota o respuesta..."></textarea>[m
+             <button class="btn btn-primary btn-sm px-3" type="button" onclick="enviarComentarioTicket()">[m
+               <i class="bi bi-send"></i> Comentar[m
+             </button>[m
+[36m@@ -2908,10 +2908,10 @@[m [masync function loadPatios() {[m
+                 <td>${p.orden}</td>[m
+                 <td><span class="badge ${p.activo ? 'bg-success' : 'bg-secondary'}">${p.activo ? 'Activo' : 'Inactivo'}</span></td>[m
+                 <td>[m
+[31m-                    <button class="btn btn-sm btn-outline-primary me-1" onclick='patioModalAbrir(${JSON.stringify(p)})'>[m
+[32m+[m[32m                    <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-sm btn-outline-primary me-1" onclick='patioModalAbrir(${JSON.stringify(p)})'>[m
+                         <i class="bi bi-pencil"></i>[m
+                     </button>[m
+[31m-                    <button class="btn btn-sm btn-outline-danger" onclick="patioEliminar(${p.id}, '${p.codigo}')">[m
+[32m+[m[32m                    <button aria-label="TODO_DESCRIBIR_BOTON" class="btn btn-sm btn-outline-danger" onclick="patioEliminar(${p.id}, '${p.codigo}')">[m
+                         <i class="bi bi-trash"></i>[m
+                     </button>[m
+                 </td>[m
+[1mdiff --git a/templates/login.html b/templates/login.html[m
+[1mindex 465ec6d..3f6cc57 100644[m
+[1m--- a/templates/login.html[m
+[1m+++ b/templates/login.html[m
+[36m@@ -19,13 +19,13 @@[m
+                 {% csrf_token %}[m
+                 <div class="mb-3">[m
+                     <label class="form-label fw-semibold">Código de técnico</label>[m
+[31m-                    <input type="text" name="codigo" class="form-control form-control-lg"[m
+[32m+[m[32m                    <input aria-label="TODO_DESCRIBIR_codigo" type="text" name="codigo" class="form-control form-control-lg"[m
+                            placeholder="Ej. 10844" required autofocus[m
+                            style="border-radius:10px;" inputmode="numeric" pattern="[0-9]+">[m
+                 </div>[m
+                 <div class="mb-3">[m
+                     <label class="form-label fw-semibold">Contraseña</label>[m
+[31m-                    <input type="password" name="password" class="form-control form-control-lg" required[m
+[32m+[m[32m                    <input aria-label="TODO_DESCRIBIR_password" type="password" name="password" class="form-control form-control-lg" required[m
+                            placeholder="••••••••" style="border-radius:10px;" autocomplete="current-password">[m
+                 </div>[m
+                 <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold"[m

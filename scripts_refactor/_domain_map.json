@@ -1,0 +1,66 @@
+{
+  "auth": [
+    "require_tecnico",
+    "require_admin",
+    "_client_ip",
+    "login_view",
+    "privacidad_view",
+    "logout_view"
+  ],
+  "dashboard": [
+    "dashboard",
+    "get_contador_hoy",
+    "api_contador",
+    "api_resumen"
+  ],
+  "reportes": [
+    "api_reportes",
+    "api_inventario"
+  ],
+  "bitacora": [
+    "api_guardar_bitacora",
+    "api_bitacora_cola",
+    "api_bitacoras_historial",
+    "_bitacora_to_dict",
+    "api_formulario_activo",
+    "api_formulario_editor"
+  ],
+  "usuarios": [
+    "api_usuarios",
+    "api_usuario_crear",
+    "api_usuario_editar",
+    "api_usuario_eliminar",
+    "api_usuario_reset_password"
+  ],
+  "flota": [
+    "api_flota",
+    "api_flota_accion",
+    "api_flota_import",
+    "api_flota_import_matriz"
+  ],
+  "gps": [
+    "api_gps",
+    "api_gps_accion",
+    "api_gps_import"
+  ],
+  "poller_api": [
+    "api_genesis_import",
+    "_calcular_patio_row",
+    "_parse_hora_entrada",
+    "api_busae_import",
+    "api_poller_health",
+    "api_poller_sync"
+  ],
+  "auditoria": [
+    "api_auditoria"
+  ],
+  "config": [
+    "api_config",
+    "api_patios"
+  ],
+  "tickets": [
+    "api_tickets",
+    "api_ticket_crear",
+    "api_ticket_accion"
+  ]
+}

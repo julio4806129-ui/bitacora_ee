@@ -1,0 +1,12 @@
+# buses/views — paquete generado, re-exporta todo
+from .auth import *  # noqa: F401,F403
+from .dashboard import *  # noqa: F401,F403
+from .reportes import *  # noqa: F401,F403
+from .bitacora import *  # noqa: F401,F403
+from .usuarios import *  # noqa: F401,F403
+from .flota import *  # noqa: F401,F403
+from .gps import *  # noqa: F401,F403
+from .poller_api import *  # noqa: F401,F403
+from .auditoria import *  # noqa: F401,F403
+from .config import *  # noqa: F401,F403
+from .tickets import *  # noqa: F401,F403
